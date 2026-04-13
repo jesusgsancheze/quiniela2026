@@ -20,11 +20,22 @@
     </div>
 
     <!-- Team 1 -->
-    <div class="flex-1 text-center sm:text-right">
-      <p class="font-semibold text-primary">
-        {{ match.team1?.name || match.team1Placeholder || 'TBD' }}
-      </p>
-      <p v-if="match.team1?.code" class="text-xs text-gray-400">{{ match.team1.code }}</p>
+    <div class="flex-1 flex items-center justify-center sm:justify-end gap-2">
+      <div class="text-center sm:text-right">
+        <p class="font-semibold text-primary">
+          {{ match.team1?.name || match.team1Placeholder || 'TBD' }}
+        </p>
+        <p v-if="match.team1?.code" class="text-xs text-gray-400">{{ match.team1.code }}</p>
+      </div>
+      <img
+        v-if="match.team1?.flagUrl"
+        :src="match.team1.flagUrl"
+        :alt="match.team1.name"
+        class="w-10 h-7 object-cover rounded shadow-sm"
+      />
+      <div v-else class="w-10 h-7 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-400">
+        {{ match.team1?.code || '?' }}
+      </div>
     </div>
 
     <!-- Score / Input -->
@@ -60,11 +71,22 @@
     </div>
 
     <!-- Team 2 -->
-    <div class="flex-1 text-center sm:text-left">
-      <p class="font-semibold text-primary">
-        {{ match.team2?.name || match.team2Placeholder || 'TBD' }}
-      </p>
-      <p v-if="match.team2?.code" class="text-xs text-gray-400">{{ match.team2.code }}</p>
+    <div class="flex-1 flex items-center justify-center sm:justify-start gap-2">
+      <img
+        v-if="match.team2?.flagUrl"
+        :src="match.team2.flagUrl"
+        :alt="match.team2.name"
+        class="w-10 h-7 object-cover rounded shadow-sm"
+      />
+      <div v-else class="w-10 h-7 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-400">
+        {{ match.team2?.code || '?' }}
+      </div>
+      <div class="text-center sm:text-left">
+        <p class="font-semibold text-primary">
+          {{ match.team2?.name || match.team2Placeholder || 'TBD' }}
+        </p>
+        <p v-if="match.team2?.code" class="text-xs text-gray-400">{{ match.team2.code }}</p>
+      </div>
     </div>
 
     <!-- Save button -->

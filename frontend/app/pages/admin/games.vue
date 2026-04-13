@@ -27,8 +27,9 @@
         :key="match._id"
         class="card flex flex-col sm:flex-row items-center gap-4"
       >
-        <div class="flex-1 text-right font-semibold text-primary">
-          {{ match.team1?.name || match.team1Placeholder || 'TBD' }}
+        <div class="flex-1 flex items-center justify-end gap-2">
+          <span class="font-semibold text-primary">{{ match.team1?.name || match.team1Placeholder || 'TBD' }}</span>
+          <img v-if="match.team1?.flagUrl" :src="match.team1.flagUrl" :alt="match.team1.name" class="w-8 h-6 object-cover rounded shadow-sm" />
         </div>
 
         <div class="flex items-center gap-2">
@@ -48,8 +49,9 @@
           </template>
         </div>
 
-        <div class="flex-1 font-semibold text-primary">
-          {{ match.team2?.name || match.team2Placeholder || 'TBD' }}
+        <div class="flex-1 flex items-center gap-2">
+          <img v-if="match.team2?.flagUrl" :src="match.team2.flagUrl" :alt="match.team2.name" class="w-8 h-6 object-cover rounded shadow-sm" />
+          <span class="font-semibold text-primary">{{ match.team2?.name || match.team2Placeholder || 'TBD' }}</span>
         </div>
 
         <div class="flex gap-2">

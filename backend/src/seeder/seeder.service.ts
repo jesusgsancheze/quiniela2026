@@ -25,6 +25,7 @@ interface SeedMatch {
 interface SeedData {
   groups: Record<string, string[]>;
   teamCodes: Record<string, string>;
+  flagCodes: Record<string, string>;
   matches: SeedMatch[];
 }
 
@@ -50,7 +51,11 @@ export class SeederService {
     // Create teams
     const teamMap = new Map<string, string>(); // name -> id
     for (const [name, code] of Object.entries(data.teamCodes)) {
-      const team = await this.teamsService.upsert(name, code);
+      const flagCode = data.flagCodes[name];
+      const flagUrl = flagCode
+        ? `https://flagcdn.com/w80/${flagCode}.png`
+        : null;
+      const team = await this.teamsService.upsert(name, code, flagUrl ?? undefined);
       teamMap.set(name, team._id.toString());
     }
     this.logger.log(`Seeded ${teamMap.size} teams`);
