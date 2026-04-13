@@ -1,0 +1,75 @@
+<template>
+  <div>
+    <h1 class="text-3xl font-bold text-primary mb-6">
+      Welcome, {{ authStore.user?.firstName }}!
+    </h1>
+
+    <!-- Status warning for inactive players -->
+    <div v-if="!authStore.isAdmin && !authStore.isActive" class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-6 py-4 rounded-xl mb-6">
+      <h3 class="font-semibold mb-1">Account Pending Activation</h3>
+      <p class="text-sm">Your account is pending administrator approval. You can view matches but cannot submit predictions until your account is activated.</p>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="card text-center">
+        <p class="text-gray-500 text-sm mb-1">Your Role</p>
+        <p class="text-2xl font-bold text-primary capitalize">{{ authStore.user?.role }}</p>
+      </div>
+      <div class="card text-center">
+        <p class="text-gray-500 text-sm mb-1">Account Status</p>
+        <span :class="authStore.isActive ? 'badge-active' : 'badge-inactive'" class="text-lg">
+          {{ authStore.user?.status }}
+        </span>
+      </div>
+      <div v-if="progress" class="card text-center">
+        <p class="text-gray-500 text-sm mb-1">Predictions Progress</p>
+        <p class="text-2xl font-bold text-accent">{{ progress.percentage }}%</p>
+        <p class="text-xs text-gray-400 mt-1">{{ progress.filled }}/{{ progress.total }} matches</p>
+      </div>
+    </div>
+
+    <!-- Quick links -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <template v-if="authStore.isAdmin">
+        <NuxtLink to="/admin/games" class="card hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-accent">
+          <h3 class="font-semibold text-primary text-lg">Manage Games</h3>
+          <p class="text-gray-500 text-sm mt-1">Enter match results and manage game data</p>
+        </NuxtLink>
+        <NuxtLink to="/admin/players" class="card hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-secondary">
+          <h3 class="font-semibold text-primary text-lg">Manage Players</h3>
+          <p class="text-gray-500 text-sm mt-1">Activate or deactivate player accounts</p>
+        </NuxtLink>
+      </template>
+      <template v-else>
+        <NuxtLink to="/predictions" class="card hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-accent">
+          <h3 class="font-semibold text-primary text-lg">My Predictions</h3>
+          <p class="text-gray-500 text-sm mt-1">Submit your predictions for all matches</p>
+        </NuxtLink>
+      </template>
+      <NuxtLink to="/positions" class="card hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-primary">
+        <h3 class="font-semibold text-primary text-lg">Leaderboard</h3>
+        <p class="text-gray-500 text-sm mt-1">See the current standings and rankings</p>
+      </NuxtLink>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { PredictionProgress } from '~/types'
+
+definePageMeta({ middleware: 'auth' })
+
+const authStore = useAuthStore()
+const { apiFetch } = useApi()
+const progress = ref<PredictionProgress | null>(null)
+
+onMounted(async () => {
+  await authStore.fetchProfile()
+  if (authStore.isActive || authStore.isAdmin) {
+    try {
+      progress.value = await apiFetch<PredictionProgress>('/api/predictions/progress')
+    } catch {}
+  }
+})
+</script>
