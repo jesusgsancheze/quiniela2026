@@ -15,7 +15,7 @@ export class Prediction extends Document {
   @Prop({ required: true, min: 0 })
   score2: number;
 
-  @Prop({ default: null })
+  @Prop({ type: Number, default: null })
   points: number | null;
 }
 

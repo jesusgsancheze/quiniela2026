@@ -36,10 +36,10 @@ export class Match extends Document {
   @Prop({ default: '' })
   venue: string;
 
-  @Prop({ default: null })
+  @Prop({ type: Number, default: null })
   score1: number | null;
 
-  @Prop({ default: null })
+  @Prop({ type: Number, default: null })
   score2: number | null;
 
   @Prop({ enum: ['scheduled', 'finished'], default: 'scheduled' })
