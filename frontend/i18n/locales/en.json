@@ -1,0 +1,163 @@
+{
+  "app": {
+    "title": "Quiniela 2026",
+    "subtitle": "FIFA World Cup",
+    "footer": "Quiniela 2026 - FIFA World Cup Canada/Mexico/USA"
+  },
+  "nav": {
+    "games": "Games",
+    "players": "Players",
+    "myPredictions": "My Predictions",
+    "standings": "Standings",
+    "positions": "Positions",
+    "profile": "Profile",
+    "changePassword": "Change Password",
+    "logout": "Logout"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "createAccount": "Create Account",
+    "creatingAccount": "Creating account...",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "register": "Register",
+    "invalidCredentials": "Invalid credentials",
+    "registrationFailed": "Registration failed",
+    "passwordsNoMatch": "Passwords do not match",
+    "minPassword": "Minimum 6 characters",
+    "emailPlaceholder": "your{'@'}email.com"
+  },
+  "home": {
+    "welcome": "Welcome, {name}!",
+    "pendingTitle": "Account Pending Activation",
+    "pendingMessage": "Your account is pending administrator approval. You can view matches but cannot submit predictions until your account is activated.",
+    "yourRole": "Your Role",
+    "accountStatus": "Account Status",
+    "predictionsProgress": "Predictions Progress",
+    "matches": "matches",
+    "manageGames": "Manage Games",
+    "manageGamesDesc": "Enter match results and manage game data",
+    "managePlayers": "Manage Players",
+    "managePlayersDesc": "Activate or deactivate player accounts",
+    "myPredictions": "My Predictions",
+    "myPredictionsDesc": "Submit your predictions for all matches",
+    "leaderboard": "Leaderboard",
+    "leaderboardDesc": "See the current standings and rankings"
+  },
+  "predictions": {
+    "title": "My Predictions",
+    "inactiveTitle": "Account not active",
+    "inactiveMessage": "You can view matches but cannot submit predictions until an admin activates your account.",
+    "progress": "Prediction Progress",
+    "allMatches": "All Matches",
+    "filled": "Filled",
+    "unfilled": "Unfilled",
+    "loading": "Loading matches...",
+    "save": "Save",
+    "update": "Update",
+    "saveFailed": "Failed to save prediction"
+  },
+  "positions": {
+    "title": "Leaderboard",
+    "loading": "Loading positions...",
+    "noResults": "No results yet",
+    "noResultsDesc": "Positions will appear once match results are entered",
+    "player": "Player",
+    "matches": "Matches",
+    "points": "Points"
+  },
+  "standings": {
+    "title": "Group Standings",
+    "loading": "Loading standings...",
+    "qualifies": "Qualifies",
+    "possible3rd": "Possible 3rd",
+    "team": "Team"
+  },
+  "admin": {
+    "games": {
+      "title": "Manage Games",
+      "all": "All",
+      "groupStage": "Group Stage",
+      "loading": "Loading matches...",
+      "enterResult": "Enter Result",
+      "editResult": "Edit Result",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "saveFailed": "Failed to save result",
+      "clearResult": "Clear",
+      "clearConfirm": "Clear this result? Points will be recalculated.",
+      "clearFailed": "Failed to clear result",
+      "autoFill": "Auto-fill Results",
+      "autoFillConfirm": "Generate random scores for all scheduled group matches?",
+      "autoFillSuccess": "Auto-filled {count} matches",
+      "autoFillFailed": "Failed to auto-fill results",
+      "clearAll": "Clear All Results",
+      "clearAllConfirm": "Clear ALL match results and recalculate points? This cannot be undone.",
+      "clearAllSuccess": "Cleared {count} results",
+      "clearAllFailed": "Failed to clear results"
+    },
+    "players": {
+      "title": "Manage Players",
+      "loading": "Loading players...",
+      "player": "Player",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "updateFailed": "Failed to update status",
+      "resetPassword": "Reset Password",
+      "newPassword": "New password",
+      "resetConfirm": "Reset",
+      "resetSuccess": "Password reset successfully",
+      "resetFailed": "Failed to reset password",
+      "progress": "Progress"
+    },
+    "positions": {
+      "title": "Positions"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "picture": "Profile Picture",
+    "personalInfo": "Personal Information",
+    "updateProfile": "Update Profile",
+    "saving": "Saving...",
+    "updated": "Profile updated successfully",
+    "updateFailed": "Failed to update profile",
+    "pictureUpdated": "Profile picture updated",
+    "pictureFailed": "Failed to upload picture",
+    "maxSize": "Max 2MB, JPG/PNG/WebP"
+  },
+  "changePassword": {
+    "title": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "change": "Change Password",
+    "changing": "Changing...",
+    "changed": "Password changed successfully",
+    "changeFailed": "Failed to change password",
+    "noMatch": "New passwords do not match"
+  },
+  "match": {
+    "final": "Final",
+    "pts": "pts",
+    "yourPrediction": "Your prediction",
+    "result": "Result",
+    "noPrediction": "No prediction",
+    "saved": "Saved",
+    "saving": "Saving..."
+  },
+  "common": {
+    "active": "active",
+    "inactive": "inactive"
+  }
+}

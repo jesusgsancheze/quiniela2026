@@ -70,3 +70,24 @@ export interface AuthResponse {
   access_token: string
   user: User
 }
+
+export interface TeamStanding {
+  teamId: string
+  teamName: string
+  teamCode: string
+  flagUrl: string | null
+  played: number
+  won: number
+  drawn: number
+  lost: number
+  goalsFor: number
+  goalsAgainst: number
+  goalDifference: number
+  points: number
+}
+
+export interface GroupStandings {
+  groupId: string
+  groupName: string
+  standings: TeamStanding[]
+}

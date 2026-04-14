@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Prediction } from './schemas/prediction.schema.js';
 import { MatchesService } from '../matches/matches.service.js';
 
@@ -75,12 +75,45 @@ export class PredictionsService {
     total: number;
     percentage: number;
   }> {
-    const total = await this.matchesService.countAll();
+    const total = await this.matchesService.countGroupStage();
+    const groupMatchIds = await this.matchesService.getGroupStageMatchIds();
     const filled = await this.predictionModel
-      .countDocuments({ user: userId })
+      .countDocuments({ user: userId, match: { $in: groupMatchIds } })
       .exec();
     const percentage = total > 0 ? Math.round((filled / total) * 100) : 0;
     return { filled, total, percentage };
+  }
+
+  async getAllProgress(): Promise<
+    Record<string, { filled: number; total: number; percentage: number }>
+  > {
+    const total = await this.matchesService.countGroupStage();
+    const groupMatchIds = await this.matchesService.getGroupStageMatchIds();
+
+    // Use find + manual grouping instead of aggregate to avoid ObjectId casting issues
+    const predictions = await this.predictionModel
+      .find({ match: { $in: groupMatchIds } }, { user: 1 })
+      .lean()
+      .exec();
+
+    const countByUser = new Map<string, number>();
+    for (const p of predictions) {
+      const uid = p.user.toString();
+      countByUser.set(uid, (countByUser.get(uid) || 0) + 1);
+    }
+
+    const progressMap: Record<
+      string,
+      { filled: number; total: number; percentage: number }
+    > = {};
+    for (const [userId, filled] of countByUser) {
+      progressMap[userId] = {
+        filled,
+        total,
+        percentage: total > 0 ? Math.round((filled / total) * 100) : 0,
+      };
+    }
+    return progressMap;
   }
 
   async calculatePoints(
@@ -114,6 +147,13 @@ export class PredictionsService {
       prediction.points = points;
       await prediction.save();
     }
+  }
+
+  async clearPoints(matchId: string): Promise<void> {
+    await this.predictionModel.updateMany(
+      { match: matchId },
+      { points: null },
+    );
   }
 
   async getAllPredictionsForMatch(matchId: string): Promise<Prediction[]> {

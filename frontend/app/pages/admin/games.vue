@@ -1,9 +1,9 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-primary mb-6">Manage Games</h1>
+    <h1 class="text-3xl font-bold text-primary mb-6">{{ $t('admin.games.title') }}</h1>
 
-    <!-- Stage filter -->
-    <div class="flex flex-wrap gap-2 mb-6">
+    <!-- Stage filter + bulk actions -->
+    <div class="flex flex-wrap items-center gap-2 mb-6">
       <button
         v-for="stage in stages"
         :key="stage.value"
@@ -17,9 +17,26 @@
       >
         {{ stage.label }}
       </button>
+
+      <div class="flex-1"></div>
+
+      <button
+        @click="autoFillResults"
+        :disabled="bulkLoading"
+        class="btn-accent text-sm px-4 py-2 disabled:opacity-50"
+      >
+        {{ bulkLoading ? '...' : $t('admin.games.autoFill') }}
+      </button>
+      <button
+        @click="clearAllResults"
+        :disabled="bulkLoading"
+        class="text-sm px-4 py-2 rounded-lg font-semibold border-2 border-red-300 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+      >
+        {{ $t('admin.games.clearAll') }}
+      </button>
     </div>
 
-    <div v-if="loading" class="text-center py-12 text-gray-500">Loading matches...</div>
+    <div v-if="loading" class="text-center py-12 text-gray-500">{{ $t('admin.games.loading') }}</div>
 
     <div v-else class="space-y-3">
       <div
@@ -28,8 +45,8 @@
         class="card flex flex-col sm:flex-row items-center gap-4"
       >
         <div class="flex-1 flex items-center justify-end gap-2">
-          <span class="font-semibold text-primary">{{ match.team1?.name || match.team1Placeholder || 'TBD' }}</span>
-          <img v-if="match.team1?.flagUrl" :src="match.team1.flagUrl" :alt="match.team1.name" class="w-8 h-6 object-cover rounded shadow-sm" />
+          <span class="font-semibold text-primary">{{ match.team1?.code || match.team1Placeholder || 'TBD' }}</span>
+          <img v-if="match.team1?.flagUrl" :src="match.team1.flagUrl" :alt="match.team1.code" class="w-8 h-6 object-cover rounded shadow-sm" />
         </div>
 
         <div class="flex items-center gap-2">
@@ -50,25 +67,32 @@
         </div>
 
         <div class="flex-1 flex items-center gap-2">
-          <img v-if="match.team2?.flagUrl" :src="match.team2.flagUrl" :alt="match.team2.name" class="w-8 h-6 object-cover rounded shadow-sm" />
-          <span class="font-semibold text-primary">{{ match.team2?.name || match.team2Placeholder || 'TBD' }}</span>
+          <img v-if="match.team2?.flagUrl" :src="match.team2.flagUrl" :alt="match.team2.code" class="w-8 h-6 object-cover rounded shadow-sm" />
+          <span class="font-semibold text-primary">{{ match.team2?.code || match.team2Placeholder || 'TBD' }}</span>
         </div>
 
         <div class="flex gap-2">
           <template v-if="editingMatch === match._id">
             <button @click="saveResult(match._id)" :disabled="saving" class="btn-accent text-sm px-3 py-1">
-              {{ saving ? '...' : 'Confirm' }}
+              {{ saving ? '...' : $t('admin.games.confirm') }}
             </button>
-            <button @click="cancelEdit" class="btn-outline text-sm px-3 py-1">Cancel</button>
+            <button @click="cancelEdit" class="btn-outline text-sm px-3 py-1">{{ $t('admin.games.cancel') }}</button>
           </template>
           <template v-else>
             <button @click="startEdit(match)" class="btn-primary text-sm px-3 py-1">
-              {{ match.status === 'finished' ? 'Edit Result' : 'Enter Result' }}
+              {{ match.status === 'finished' ? $t('admin.games.editResult') : $t('admin.games.enterResult') }}
+            </button>
+            <button
+              v-if="match.status === 'finished'"
+              @click="clearResult(match._id)"
+              class="btn-outline text-sm px-3 py-1 text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700"
+            >
+              {{ $t('admin.games.clearResult') }}
             </button>
           </template>
         </div>
 
-        <div class="w-full text-center text-xs text-gray-400 mt-1">
+        <div class="w-50 text-center text-xs text-gray-400 mt-1">
           #{{ match.matchNumber }} &middot; {{ formatDate(match.date) }} &middot; {{ match.venue }}
           <span v-if="match.group" class="ml-1 bg-gray-100 px-2 py-0.5 rounded">{{ match.group.name }}</span>
         </div>
@@ -82,29 +106,26 @@ import type { Match } from '~/types'
 
 definePageMeta({ middleware: 'admin' })
 
+const { t } = useI18n()
 const { apiFetch } = useApi()
 const matchesStore = useMatchesStore()
 const loading = ref(true)
 const saving = ref(false)
+const bulkLoading = ref(false)
 const activeStage = ref('all')
 const editingMatch = ref<string | null>(null)
 const editScore1 = ref<number>(0)
 const editScore2 = ref<number>(0)
 
-const stages = [
-  { value: 'all', label: 'All' },
-  { value: 'group', label: 'Group Stage' },
-  { value: 'round32', label: 'Round of 32' },
-  { value: 'round16', label: 'Round of 16' },
-  { value: 'quarter', label: 'Quarter-finals' },
-  { value: 'semi', label: 'Semi-finals' },
-  { value: 'third', label: 'Third Place' },
-  { value: 'final', label: 'Final' },
-]
+const stages = computed(() => [
+  { value: 'all', label: t('admin.games.all') },
+  { value: 'group', label: t('admin.games.groupStage') },
+])
 
 const filteredMatches = computed(() => {
-  if (activeStage.value === 'all') return matchesStore.matches
-  return matchesStore.matches.filter((m) => m.stage === activeStage.value)
+  const groupOnly = matchesStore.matches.filter((m) => m.stage === 'group')
+  if (activeStage.value === 'all') return groupOnly
+  return groupOnly
 })
 
 function startEdit(match: Match) {
@@ -117,6 +138,16 @@ function cancelEdit() {
   editingMatch.value = null
 }
 
+async function clearResult(matchId: string) {
+  if (!confirm(t('admin.games.clearConfirm'))) return
+  try {
+    await apiFetch(`/api/matches/${matchId}/result`, { method: 'DELETE' })
+    await matchesStore.fetchMatches()
+  } catch (e: any) {
+    alert(e?.data?.message || t('admin.games.clearFailed'))
+  }
+}
+
 async function saveResult(matchId: string) {
   saving.value = true
   try {
@@ -127,9 +158,37 @@ async function saveResult(matchId: string) {
     editingMatch.value = null
     await matchesStore.fetchMatches()
   } catch (e: any) {
-    alert(e?.data?.message || 'Failed to save result')
+    alert(e?.data?.message || t('admin.games.saveFailed'))
   } finally {
     saving.value = false
+  }
+}
+
+async function autoFillResults() {
+  if (!confirm(t('admin.games.autoFillConfirm'))) return
+  bulkLoading.value = true
+  try {
+    const res = await apiFetch<{ filled: number }>('/api/matches/auto-fill', { method: 'POST' })
+    alert(t('admin.games.autoFillSuccess', { count: res.filled }))
+    await matchesStore.fetchMatches()
+  } catch (e: any) {
+    alert(e?.data?.message || t('admin.games.autoFillFailed'))
+  } finally {
+    bulkLoading.value = false
+  }
+}
+
+async function clearAllResults() {
+  if (!confirm(t('admin.games.clearAllConfirm'))) return
+  bulkLoading.value = true
+  try {
+    const res = await apiFetch<{ cleared: number }>('/api/matches/results/all', { method: 'DELETE' })
+    alert(t('admin.games.clearAllSuccess', { count: res.cleared }))
+    await matchesStore.fetchMatches()
+  } catch (e: any) {
+    alert(e?.data?.message || t('admin.games.clearAllFailed'))
+  } finally {
+    bulkLoading.value = false
   }
 }
 

@@ -1,17 +1,17 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-primary mb-6">My Predictions</h1>
+    <h1 class="text-3xl font-bold text-primary mb-6">{{ $t('predictions.title') }}</h1>
 
     <!-- Inactive warning -->
     <div v-if="!authStore.isActive && !authStore.isAdmin" class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-6 py-4 rounded-xl mb-6">
-      <p class="font-semibold">Account not active</p>
-      <p class="text-sm">You can view matches but cannot submit predictions until an admin activates your account.</p>
+      <p class="font-semibold">{{ $t('predictions.inactiveTitle') }}</p>
+      <p class="text-sm">{{ $t('predictions.inactiveMessage') }}</p>
     </div>
 
     <!-- Progress bar -->
     <div v-if="predictionsStore.progress" class="card mb-6">
       <div class="flex justify-between items-center mb-2">
-        <span class="text-sm font-medium text-gray-600">Prediction Progress</span>
+        <span class="text-sm font-medium text-gray-600">{{ $t('predictions.progress') }}</span>
         <span class="text-sm font-bold text-accent">
           {{ predictionsStore.progress.filled }}/{{ predictionsStore.progress.total }} ({{ predictionsStore.progress.percentage }}%)
         </span>
@@ -40,7 +40,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="text-center py-12 text-gray-500">
-      Loading matches...
+      {{ $t('predictions.loading') }}
     </div>
 
     <!-- Matches grouped by round/group -->
@@ -69,18 +69,18 @@ import type { Match, Prediction } from '~/types'
 
 definePageMeta({ middleware: 'auth' })
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const matchesStore = useMatchesStore()
 const predictionsStore = usePredictionsStore()
 const loading = ref(true)
 const activeTab = ref('all')
-const saveMessage = ref('')
 
-const tabs = [
-  { value: 'all', label: 'All Matches' },
-  { value: 'filled', label: 'Filled' },
-  { value: 'unfilled', label: 'Unfilled' },
-]
+const tabs = computed(() => [
+  { value: 'all', label: t('predictions.allMatches') },
+  { value: 'filled', label: t('predictions.filled') },
+  { value: 'unfilled', label: t('predictions.unfilled') },
+])
 
 const canEdit = computed(() => {
   const deadline = new Date('2026-06-11T00:00:00Z')
@@ -101,7 +101,7 @@ function getPrediction(matchId: string): Prediction | undefined {
 }
 
 const filteredGroupedMatches = computed(() => {
-  let matches = matchesStore.matches
+  let matches = matchesStore.matches.filter((m) => m.stage === 'group')
 
   if (activeTab.value === 'filled') {
     matches = matches.filter((m) => predictionsMap.value.has(m._id))
@@ -122,7 +122,7 @@ async function handleSave(data: { matchId: string; score1: number; score2: numbe
   try {
     await predictionsStore.savePrediction(data.matchId, data.score1, data.score2)
   } catch (e: any) {
-    alert(e?.data?.message || 'Failed to save prediction')
+    alert(e?.data?.message || t('predictions.saveFailed'))
   }
 }
 

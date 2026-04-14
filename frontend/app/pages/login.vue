@@ -1,6 +1,6 @@
 <template>
   <div class="card">
-    <h2 class="text-2xl font-bold text-primary mb-6 text-center">Sign In</h2>
+    <h2 class="text-2xl font-bold text-primary mb-6 text-center">{{ $t('auth.signIn') }}</h2>
 
     <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
       {{ error }}
@@ -8,23 +8,23 @@
 
     <form @submit.prevent="handleLogin" class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-        <input v-model="form.email" type="email" required class="input-field" placeholder="your@email.com" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('auth.email') }}</label>
+        <input v-model="form.email" type="email" required class="input-field" :placeholder="$t('auth.emailPlaceholder')" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-        <input v-model="form.password" type="password" required class="input-field" placeholder="Enter your password" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('auth.password') }}</label>
+        <input v-model="form.password" type="password" required class="input-field" />
       </div>
 
       <button type="submit" :disabled="loading" class="btn-primary w-full">
-        {{ loading ? 'Signing in...' : 'Sign In' }}
+        {{ loading ? $t('auth.signingIn') : $t('auth.signIn') }}
       </button>
     </form>
 
     <p class="text-center text-sm text-gray-600 mt-4">
-      Don't have an account?
-      <NuxtLink to="/register" class="text-secondary font-semibold hover:underline">Register</NuxtLink>
+      {{ $t('auth.noAccount') }}
+      <NuxtLink to="/register" class="text-secondary font-semibold hover:underline">{{ $t('auth.register') }}</NuxtLink>
     </p>
   </div>
 </template>
@@ -37,6 +37,7 @@ definePageMeta({
   middleware: 'guest',
 })
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const { apiFetch } = useApi()
 const loading = ref(false)
@@ -54,7 +55,7 @@ async function handleLogin() {
     authStore.setAuth(data)
     navigateTo('/')
   } catch (e: any) {
-    error.value = e?.data?.message || 'Invalid credentials'
+    error.value = e?.data?.message || t('auth.invalidCredentials')
   } finally {
     loading.value = false
   }

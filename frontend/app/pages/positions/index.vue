@@ -1,14 +1,14 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-primary mb-6">Leaderboard</h1>
+    <h1 class="text-3xl font-bold text-primary mb-6">{{ $t('positions.title') }}</h1>
 
     <div v-if="loading" class="text-center py-12 text-gray-500">
-      Loading positions...
+      {{ $t('positions.loading') }}
     </div>
 
     <div v-else-if="rankings.length === 0" class="card text-center py-12">
-      <p class="text-gray-500 text-lg">No results yet</p>
-      <p class="text-gray-400 text-sm mt-2">Positions will appear once match results are entered</p>
+      <p class="text-gray-500 text-lg">{{ $t('positions.noResults') }}</p>
+      <p class="text-gray-400 text-sm mt-2">{{ $t('positions.noResultsDesc') }}</p>
     </div>
 
     <div v-else class="card overflow-x-auto">
@@ -16,9 +16,9 @@
         <thead>
           <tr class="border-b-2 border-primary">
             <th class="py-3 px-4 text-left text-sm font-semibold text-primary">#</th>
-            <th class="py-3 px-4 text-left text-sm font-semibold text-primary">Player</th>
-            <th class="py-3 px-4 text-center text-sm font-semibold text-primary">Matches</th>
-            <th class="py-3 px-4 text-center text-sm font-semibold text-primary">Points</th>
+            <th class="py-3 px-4 text-left text-sm font-semibold text-primary">{{ $t('positions.player') }}</th>
+            <th class="py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.matches') }}</th>
+            <th class="py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.points') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -43,7 +43,12 @@
             </td>
             <td class="py-3 px-4">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
+                <img
+                  v-if="avatarUrl(entry.profilePicture)"
+                  :src="avatarUrl(entry.profilePicture)!"
+                  class="w-10 h-10 rounded-full object-cover"
+                />
+                <div v-else class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
                   {{ entry.firstName[0] }}{{ entry.lastName[0] }}
                 </div>
                 <div>
@@ -70,6 +75,7 @@ definePageMeta({ middleware: 'auth' })
 
 const authStore = useAuthStore()
 const { apiFetch } = useApi()
+const { avatarUrl } = useAvatar()
 const rankings = ref<LeaderboardEntry[]>([])
 const loading = ref(true)
 

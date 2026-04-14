@@ -3,7 +3,7 @@
     <!-- Match result badge -->
     <div v-if="match.status === 'finished'" class="absolute top-2 right-2">
       <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-        Final
+        {{ $t('match.final') }}
       </span>
     </div>
 
@@ -15,7 +15,7 @@
         prediction.points === 1 ? 'bg-blue-100 text-blue-800' :
         'bg-gray-100 text-gray-600'
       ]">
-        {{ prediction.points }} pts
+        {{ prediction.points }} {{ $t('match.pts') }}
       </span>
     </div>
 
@@ -39,32 +39,83 @@
     </div>
 
     <!-- Score / Input -->
-    <div class="flex items-center gap-2">
+    <div class="flex flex-col items-center gap-1">
+      <!-- Editable inputs (match not finished, user can edit) -->
       <template v-if="canEdit && match.status !== 'finished'">
-        <input
-          type="number"
-          v-model.number="score1"
-          min="0"
-          max="20"
-          class="w-14 h-12 text-center text-lg font-bold border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none"
-        />
-        <span class="text-gray-400 font-bold text-xl">-</span>
-        <input
-          type="number"
-          v-model.number="score2"
-          min="0"
-          max="20"
-          class="w-14 h-12 text-center text-lg font-bold border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none"
-        />
+        <div class="flex items-center gap-2">
+          <input
+            type="number"
+            v-model.number="score1"
+            min="0"
+            max="20"
+            @blur="tryAutoSave"
+            class="w-14 h-12 text-center text-lg font-bold border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none"
+          />
+          <span class="text-gray-400 font-bold text-xl">-</span>
+          <input
+            type="number"
+            v-model.number="score2"
+            min="0"
+            max="20"
+            @blur="tryAutoSave"
+            class="w-14 h-12 text-center text-lg font-bold border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none"
+          />
+        </div>
+        <!-- Save status -->
+        <div class="h-5 flex items-center">
+          <span v-if="saving" class="text-xs text-gray-400">{{ $t('match.saving') }}</span>
+          <span v-else-if="justSaved" class="text-xs text-green-500 font-medium">{{ $t('match.saved') }}</span>
+        </div>
       </template>
-      <template v-else>
+
+      <!-- Finished match: show result + user prediction -->
+      <template v-else-if="match.status === 'finished'">
+        <!-- Actual result -->
+        <p class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">{{ $t('match.result') }}</p>
         <div class="flex items-center gap-2">
           <span class="w-10 h-10 flex items-center justify-center text-lg font-bold bg-primary-dark text-white rounded-lg">
-            {{ match.status === 'finished' ? match.score1 : (prediction?.score1 ?? '-') }}
+            {{ match.score1 }}
           </span>
           <span class="text-gray-400 font-bold">-</span>
           <span class="w-10 h-10 flex items-center justify-center text-lg font-bold bg-primary-dark text-white rounded-lg">
-            {{ match.status === 'finished' ? match.score2 : (prediction?.score2 ?? '-') }}
+            {{ match.score2 }}
+          </span>
+        </div>
+        <!-- User's prediction -->
+        <div class="mt-1">
+          <p class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">{{ $t('match.yourPrediction') }}</p>
+          <div v-if="prediction" class="flex items-center justify-center gap-1.5 mt-0.5">
+            <span :class="[
+              'w-7 h-7 flex items-center justify-center text-sm font-bold rounded',
+              prediction.points === 3 ? 'bg-accent/20 text-accent-dark' :
+              prediction.points === 1 ? 'bg-blue-50 text-blue-700' :
+              'bg-red-50 text-red-500'
+            ]">
+              {{ prediction.score1 }}
+            </span>
+            <span class="text-gray-300 text-xs">-</span>
+            <span :class="[
+              'w-7 h-7 flex items-center justify-center text-sm font-bold rounded',
+              prediction.points === 3 ? 'bg-accent/20 text-accent-dark' :
+              prediction.points === 1 ? 'bg-blue-50 text-blue-700' :
+              'bg-red-50 text-red-500'
+            ]">
+              {{ prediction.score2 }}
+            </span>
+          </div>
+          <p v-else class="text-xs text-gray-300 italic mt-0.5">{{ $t('match.noPrediction') }}</p>
+        </div>
+      </template>
+
+      <!-- Not finished, read-only (user prediction or dashes) -->
+      <template v-else>
+        <div class="flex items-center gap-2">
+          <span class="w-10 h-10 flex items-center justify-center text-lg font-bold bg-primary-dark text-white rounded-lg">
+            {{ prediction?.score1 ?? '-' }}
+          </span>
+          <span class="text-gray-400 font-bold">-</span>
+          <span class="w-10 h-10 flex items-center justify-center text-lg font-bold bg-primary-dark text-white rounded-lg">
+            {{ prediction?.score2 ?? '-' }}
           </span>
         </div>
       </template>
@@ -87,17 +138,6 @@
         </p>
         <p v-if="match.team2?.code" class="text-xs text-gray-400">{{ match.team2.code }}</p>
       </div>
-    </div>
-
-    <!-- Save button -->
-    <div v-if="canEdit && match.status !== 'finished'" class="sm:ml-4">
-      <button
-        @click="handleSave"
-        :disabled="saving || score1 == null || score2 == null"
-        class="btn-accent text-sm px-4 py-2 disabled:opacity-50"
-      >
-        {{ saving ? '...' : (prediction ? 'Update' : 'Save') }}
-      </button>
     </div>
 
     <!-- Match info -->
@@ -124,6 +164,8 @@ const emit = defineEmits<{
 const score1 = ref<number | null>(props.prediction?.score1 ?? null)
 const score2 = ref<number | null>(props.prediction?.score2 ?? null)
 const saving = ref(false)
+const justSaved = ref(false)
+let savedTimeout: ReturnType<typeof setTimeout> | null = null
 
 watch(() => props.prediction, (pred) => {
   if (pred) {
@@ -132,18 +174,26 @@ watch(() => props.prediction, (pred) => {
   }
 })
 
-async function handleSave() {
+function tryAutoSave() {
   if (score1.value == null || score2.value == null) return
+  if (score1.value < 0 || score2.value < 0) return
+
+  const s1 = score1.value
+  const s2 = score2.value
+  const pred = props.prediction
+  if (pred && pred.score1 === s1 && pred.score2 === s2) return
+
   saving.value = true
-  try {
-    emit('save', {
-      matchId: props.match._id,
-      score1: score1.value,
-      score2: score2.value,
-    })
-  } finally {
-    saving.value = false
-  }
+  justSaved.value = false
+  if (savedTimeout) clearTimeout(savedTimeout)
+
+  emit('save', { matchId: props.match._id, score1: s1, score2: s2 })
+
+  saving.value = false
+  justSaved.value = true
+  savedTimeout = setTimeout(() => {
+    justSaved.value = false
+  }, 2000)
 }
 
 function formatDate(dateStr: string): string {

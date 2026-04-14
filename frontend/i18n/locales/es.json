@@ -1,0 +1,163 @@
+{
+  "app": {
+    "title": "Quiniela 2026",
+    "subtitle": "Copa del Mundo FIFA",
+    "footer": "Quiniela 2026 - Copa del Mundo FIFA Canadá/México/EUA"
+  },
+  "nav": {
+    "games": "Partidos",
+    "players": "Jugadores",
+    "myPredictions": "Mis Predicciones",
+    "standings": "Clasificación",
+    "positions": "Posiciones",
+    "profile": "Perfil",
+    "changePassword": "Cambiar Contraseña",
+    "logout": "Cerrar Sesión"
+  },
+  "auth": {
+    "signIn": "Iniciar Sesión",
+    "signingIn": "Iniciando sesión...",
+    "createAccount": "Crear Cuenta",
+    "creatingAccount": "Creando cuenta...",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "noAccount": "¿No tienes una cuenta?",
+    "hasAccount": "¿Ya tienes una cuenta?",
+    "register": "Registrarse",
+    "invalidCredentials": "Credenciales inválidas",
+    "registrationFailed": "Error al registrarse",
+    "passwordsNoMatch": "Las contraseñas no coinciden",
+    "minPassword": "Mínimo 6 caracteres",
+    "emailPlaceholder": "tu{'@'}correo.com"
+  },
+  "home": {
+    "welcome": "¡Bienvenido, {name}!",
+    "pendingTitle": "Cuenta Pendiente de Activación",
+    "pendingMessage": "Tu cuenta está pendiente de aprobación por un administrador. Puedes ver los partidos pero no puedes ingresar predicciones hasta que tu cuenta sea activada.",
+    "yourRole": "Tu Rol",
+    "accountStatus": "Estado de Cuenta",
+    "predictionsProgress": "Progreso de Predicciones",
+    "matches": "partidos",
+    "manageGames": "Administrar Partidos",
+    "manageGamesDesc": "Ingresar resultados de partidos y administrar datos",
+    "managePlayers": "Administrar Jugadores",
+    "managePlayersDesc": "Activar o desactivar cuentas de jugadores",
+    "myPredictions": "Mis Predicciones",
+    "myPredictionsDesc": "Ingresa tus predicciones para todos los partidos",
+    "leaderboard": "Tabla de Posiciones",
+    "leaderboardDesc": "Ver las posiciones y rankings actuales"
+  },
+  "predictions": {
+    "title": "Mis Predicciones",
+    "inactiveTitle": "Cuenta no activa",
+    "inactiveMessage": "Puedes ver los partidos pero no puedes ingresar predicciones hasta que un administrador active tu cuenta.",
+    "progress": "Progreso de Predicciones",
+    "allMatches": "Todos los Partidos",
+    "filled": "Completados",
+    "unfilled": "Sin Completar",
+    "loading": "Cargando partidos...",
+    "save": "Guardar",
+    "update": "Actualizar",
+    "saveFailed": "Error al guardar predicción"
+  },
+  "positions": {
+    "title": "Tabla de Posiciones",
+    "loading": "Cargando posiciones...",
+    "noResults": "Sin resultados aún",
+    "noResultsDesc": "Las posiciones aparecerán cuando se ingresen resultados de partidos",
+    "player": "Jugador",
+    "matches": "Partidos",
+    "points": "Puntos"
+  },
+  "standings": {
+    "title": "Clasificación por Grupos",
+    "loading": "Cargando clasificación...",
+    "qualifies": "Clasifica",
+    "possible3rd": "Posible 3ro",
+    "team": "Equipo"
+  },
+  "admin": {
+    "games": {
+      "title": "Administrar Partidos",
+      "all": "Todos",
+      "groupStage": "Fase de Grupos",
+      "loading": "Cargando partidos...",
+      "enterResult": "Ingresar Resultado",
+      "editResult": "Editar Resultado",
+      "confirm": "Confirmar",
+      "cancel": "Cancelar",
+      "saveFailed": "Error al guardar resultado",
+      "clearResult": "Borrar",
+      "clearConfirm": "¿Borrar este resultado? Los puntos serán recalculados.",
+      "clearFailed": "Error al borrar resultado",
+      "autoFill": "Auto-completar Resultados",
+      "autoFillConfirm": "¿Generar marcadores aleatorios para todos los partidos programados?",
+      "autoFillSuccess": "{count} partidos completados",
+      "autoFillFailed": "Error al auto-completar resultados",
+      "clearAll": "Borrar Todos los Resultados",
+      "clearAllConfirm": "¿Borrar TODOS los resultados y recalcular puntos? Esta acción no se puede deshacer.",
+      "clearAllSuccess": "{count} resultados borrados",
+      "clearAllFailed": "Error al borrar resultados"
+    },
+    "players": {
+      "title": "Administrar Jugadores",
+      "loading": "Cargando jugadores...",
+      "player": "Jugador",
+      "email": "Correo",
+      "role": "Rol",
+      "status": "Estado",
+      "actions": "Acciones",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "updateFailed": "Error al actualizar estado",
+      "resetPassword": "Restablecer Contraseña",
+      "newPassword": "Nueva contraseña",
+      "resetConfirm": "Restablecer",
+      "resetSuccess": "Contraseña restablecida exitosamente",
+      "resetFailed": "Error al restablecer contraseña",
+      "progress": "Progreso"
+    },
+    "positions": {
+      "title": "Posiciones"
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "picture": "Foto de Perfil",
+    "personalInfo": "Información Personal",
+    "updateProfile": "Actualizar Perfil",
+    "saving": "Guardando...",
+    "updated": "Perfil actualizado exitosamente",
+    "updateFailed": "Error al actualizar perfil",
+    "pictureUpdated": "Foto de perfil actualizada",
+    "pictureFailed": "Error al subir foto",
+    "maxSize": "Máx 2MB, JPG/PNG/WebP"
+  },
+  "changePassword": {
+    "title": "Cambiar Contraseña",
+    "currentPassword": "Contraseña Actual",
+    "newPassword": "Nueva Contraseña",
+    "confirmNewPassword": "Confirmar Nueva Contraseña",
+    "change": "Cambiar Contraseña",
+    "changing": "Cambiando...",
+    "changed": "Contraseña cambiada exitosamente",
+    "changeFailed": "Error al cambiar contraseña",
+    "noMatch": "Las nuevas contraseñas no coinciden"
+  },
+  "match": {
+    "final": "Final",
+    "pts": "pts",
+    "yourPrediction": "Tu predicción",
+    "result": "Resultado",
+    "noPrediction": "Sin predicción",
+    "saved": "Guardado",
+    "saving": "Guardando..."
+  },
+  "common": {
+    "active": "activo",
+    "inactive": "inactivo"
+  }
+}

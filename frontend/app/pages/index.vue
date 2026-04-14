@@ -1,31 +1,31 @@
 <template>
   <div>
     <h1 class="text-3xl font-bold text-primary mb-6">
-      Welcome, {{ authStore.user?.firstName }}!
+      {{ $t('home.welcome', { name: authStore.user?.firstName }) }}
     </h1>
 
     <!-- Status warning for inactive players -->
     <div v-if="!authStore.isAdmin && !authStore.isActive" class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-6 py-4 rounded-xl mb-6">
-      <h3 class="font-semibold mb-1">Account Pending Activation</h3>
-      <p class="text-sm">Your account is pending administrator approval. You can view matches but cannot submit predictions until your account is activated.</p>
+      <h3 class="font-semibold mb-1">{{ $t('home.pendingTitle') }}</h3>
+      <p class="text-sm">{{ $t('home.pendingMessage') }}</p>
     </div>
 
     <!-- Quick stats -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div class="card text-center">
-        <p class="text-gray-500 text-sm mb-1">Your Role</p>
+        <p class="text-gray-500 text-sm mb-1">{{ $t('home.yourRole') }}</p>
         <p class="text-2xl font-bold text-primary capitalize">{{ authStore.user?.role }}</p>
       </div>
       <div class="card text-center">
-        <p class="text-gray-500 text-sm mb-1">Account Status</p>
+        <p class="text-gray-500 text-sm mb-1">{{ $t('home.accountStatus') }}</p>
         <span :class="authStore.isActive ? 'badge-active' : 'badge-inactive'" class="text-lg">
-          {{ authStore.user?.status }}
+          {{ $t(`common.${authStore.user?.status}`) }}
         </span>
       </div>
       <div v-if="progress" class="card text-center">
-        <p class="text-gray-500 text-sm mb-1">Predictions Progress</p>
+        <p class="text-gray-500 text-sm mb-1">{{ $t('home.predictionsProgress') }}</p>
         <p class="text-2xl font-bold text-accent">{{ progress.percentage }}%</p>
-        <p class="text-xs text-gray-400 mt-1">{{ progress.filled }}/{{ progress.total }} matches</p>
+        <p class="text-xs text-gray-400 mt-1">{{ progress.filled }}/{{ progress.total }} {{ $t('home.matches') }}</p>
       </div>
     </div>
 
@@ -33,23 +33,23 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <template v-if="authStore.isAdmin">
         <NuxtLink to="/admin/games" class="card hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-accent">
-          <h3 class="font-semibold text-primary text-lg">Manage Games</h3>
-          <p class="text-gray-500 text-sm mt-1">Enter match results and manage game data</p>
+          <h3 class="font-semibold text-primary text-lg">{{ $t('home.manageGames') }}</h3>
+          <p class="text-gray-500 text-sm mt-1">{{ $t('home.manageGamesDesc') }}</p>
         </NuxtLink>
         <NuxtLink to="/admin/players" class="card hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-secondary">
-          <h3 class="font-semibold text-primary text-lg">Manage Players</h3>
-          <p class="text-gray-500 text-sm mt-1">Activate or deactivate player accounts</p>
+          <h3 class="font-semibold text-primary text-lg">{{ $t('home.managePlayers') }}</h3>
+          <p class="text-gray-500 text-sm mt-1">{{ $t('home.managePlayersDesc') }}</p>
         </NuxtLink>
       </template>
       <template v-else>
         <NuxtLink to="/predictions" class="card hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-accent">
-          <h3 class="font-semibold text-primary text-lg">My Predictions</h3>
-          <p class="text-gray-500 text-sm mt-1">Submit your predictions for all matches</p>
+          <h3 class="font-semibold text-primary text-lg">{{ $t('home.myPredictions') }}</h3>
+          <p class="text-gray-500 text-sm mt-1">{{ $t('home.myPredictionsDesc') }}</p>
         </NuxtLink>
       </template>
       <NuxtLink to="/positions" class="card hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-primary">
-        <h3 class="font-semibold text-primary text-lg">Leaderboard</h3>
-        <p class="text-gray-500 text-sm mt-1">See the current standings and rankings</p>
+        <h3 class="font-semibold text-primary text-lg">{{ $t('home.leaderboard') }}</h3>
+        <p class="text-gray-500 text-sm mt-1">{{ $t('home.leaderboardDesc') }}</p>
       </NuxtLink>
     </div>
   </div>

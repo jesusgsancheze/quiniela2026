@@ -9,4 +9,9 @@ export class GroupsController {
   findAll() {
     return this.groupsService.findAll();
   }
+
+  @Get('standings')
+  getStandings() {
+    return this.groupsService.getStandings();
+  }
 }

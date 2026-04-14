@@ -69,7 +69,35 @@ export class MatchesService {
       .exec() as Promise<Match>;
   }
 
+  async clearResult(matchId: string): Promise<Match> {
+    const match = await this.matchModel
+      .findByIdAndUpdate(
+        matchId,
+        { score1: null, score2: null, status: 'scheduled' },
+        { new: true },
+      )
+      .populate('team1')
+      .populate('team2')
+      .populate('group')
+      .exec();
+    if (!match) {
+      throw new NotFoundException('Match not found');
+    }
+    return match;
+  }
+
   async countAll(): Promise<number> {
     return this.matchModel.countDocuments().exec();
+  }
+
+  async countGroupStage(): Promise<number> {
+    return this.matchModel.countDocuments({ stage: 'group' }).exec();
+  }
+
+  async getGroupStageMatchIds(): Promise<string[]> {
+    const matches = await this.matchModel
+      .find({ stage: 'group' }, { _id: 1 })
+      .exec();
+    return matches.map((m) => m._id.toString());
   }
 }

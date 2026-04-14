@@ -9,6 +9,8 @@ import {
 import { PredictionsService } from './predictions.service.js';
 import { UpsertPredictionDto } from './dto/upsert-prediction.dto.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
+import { Roles } from '../common/decorators/roles.decorator.js';
+import { Role } from '../common/enums/role.enum.js';
 import { User } from '../users/schemas/user.schema.js';
 
 @Controller('api/predictions')
@@ -48,5 +50,11 @@ export class PredictionsController {
       throw new ForbiddenException('Account is not active');
     }
     return this.predictionsService.getProgress(user._id.toString());
+  }
+
+  @Get('progress/all')
+  @Roles(Role.Admin)
+  getAllProgress() {
+    return this.predictionsService.getAllProgress();
   }
 }

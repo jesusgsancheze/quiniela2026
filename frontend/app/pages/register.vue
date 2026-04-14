@@ -1,6 +1,6 @@
 <template>
   <div class="card">
-    <h2 class="text-2xl font-bold text-primary mb-6 text-center">Create Account</h2>
+    <h2 class="text-2xl font-bold text-primary mb-6 text-center">{{ $t('auth.createAccount') }}</h2>
 
     <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
       {{ error }}
@@ -9,38 +9,38 @@
     <form @submit.prevent="handleRegister" class="space-y-4">
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('auth.firstName') }}</label>
           <input v-model="form.firstName" type="text" required class="input-field" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('auth.lastName') }}</label>
           <input v-model="form.lastName" type="text" required class="input-field" />
         </div>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-        <input v-model="form.email" type="email" required class="input-field" placeholder="your@email.com" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('auth.email') }}</label>
+        <input v-model="form.email" type="email" required class="input-field" :placeholder="$t('auth.emailPlaceholder')" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-        <input v-model="form.password" type="password" required minlength="6" class="input-field" placeholder="Minimum 6 characters" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('auth.password') }}</label>
+        <input v-model="form.password" type="password" required minlength="6" class="input-field" :placeholder="$t('auth.minPassword')" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('auth.confirmPassword') }}</label>
         <input v-model="form.confirmPassword" type="password" required class="input-field" />
       </div>
 
       <button type="submit" :disabled="loading" class="btn-primary w-full">
-        {{ loading ? 'Creating account...' : 'Create Account' }}
+        {{ loading ? $t('auth.creatingAccount') : $t('auth.createAccount') }}
       </button>
     </form>
 
     <p class="text-center text-sm text-gray-600 mt-4">
-      Already have an account?
-      <NuxtLink to="/login" class="text-secondary font-semibold hover:underline">Sign In</NuxtLink>
+      {{ $t('auth.hasAccount') }}
+      <NuxtLink to="/login" class="text-secondary font-semibold hover:underline">{{ $t('auth.signIn') }}</NuxtLink>
     </p>
   </div>
 </template>
@@ -53,6 +53,7 @@ definePageMeta({
   middleware: 'guest',
 })
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const { apiFetch } = useApi()
 const loading = ref(false)
@@ -67,7 +68,7 @@ const form = reactive({
 
 async function handleRegister() {
   if (form.password !== form.confirmPassword) {
-    error.value = 'Passwords do not match'
+    error.value = t('auth.passwordsNoMatch')
     return
   }
   loading.value = true
@@ -81,7 +82,7 @@ async function handleRegister() {
     authStore.setAuth(data)
     navigateTo('/')
   } catch (e: any) {
-    error.value = e?.data?.message || 'Registration failed'
+    error.value = e?.data?.message || t('auth.registrationFailed')
   } finally {
     loading.value = false
   }
