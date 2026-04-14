@@ -24,6 +24,28 @@ export class User extends Document {
 
   @Prop({ default: null })
   profilePicture: string;
+
+  @Prop({
+    type: String,
+    enum: ['pending', 'reported', 'confirmed'],
+    default: 'pending',
+  })
+  paymentStatus: string;
+
+  @Prop({ type: String, default: null })
+  paymentNote: string;
+
+  @Prop({ default: false })
+  emailVerified: boolean;
+
+  @Prop({ type: String, default: null })
+  verificationToken: string;
+
+  @Prop({ type: String, default: null })
+  resetPasswordToken: string;
+
+  @Prop({ type: Date, default: null })
+  resetPasswordExpires: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

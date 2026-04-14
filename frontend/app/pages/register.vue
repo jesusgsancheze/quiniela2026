@@ -2,11 +2,16 @@
   <div class="card">
     <h2 class="text-2xl font-bold text-primary mb-6 text-center">{{ $t('auth.createAccount') }}</h2>
 
+    <div v-if="success" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 text-sm">
+      {{ success }}
+      <NuxtLink to="/login" class="block mt-2 text-primary font-semibold hover:underline">{{ $t('auth.backToLogin') }}</NuxtLink>
+    </div>
+
     <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
       {{ error }}
     </div>
 
-    <form @submit.prevent="handleRegister" class="space-y-4">
+    <form v-if="!success" @submit.prevent="handleRegister" class="space-y-4">
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('auth.firstName') }}</label>
@@ -54,10 +59,10 @@ definePageMeta({
 })
 
 const { t } = useI18n()
-const authStore = useAuthStore()
 const { apiFetch } = useApi()
 const loading = ref(false)
 const error = ref('')
+const success = ref('')
 const form = reactive({
   firstName: '',
   lastName: '',
@@ -73,14 +78,14 @@ async function handleRegister() {
   }
   loading.value = true
   error.value = ''
+  success.value = ''
   try {
     const { confirmPassword, ...body } = form
-    const data = await apiFetch<AuthResponse>('/api/auth/register', {
+    await apiFetch('/api/auth/register', {
       method: 'POST',
       body,
     })
-    authStore.setAuth(data)
-    navigateTo('/')
+    success.value = t('auth.registerSuccess')
   } catch (e: any) {
     error.value = e?.data?.message || t('auth.registrationFailed')
   } finally {

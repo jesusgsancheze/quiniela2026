@@ -11,7 +11,7 @@
     </div>
 
     <!-- Quick stats -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
       <div class="card text-center">
         <p class="text-gray-500 text-sm mb-1">{{ $t('home.yourRole') }}</p>
         <p class="text-2xl font-bold text-primary capitalize">{{ authStore.user?.role }}</p>
@@ -26,6 +26,13 @@
         <p class="text-gray-500 text-sm mb-1">{{ $t('home.predictionsProgress') }}</p>
         <p class="text-2xl font-bold text-accent">{{ progress.percentage }}%</p>
         <p class="text-xs text-gray-400 mt-1">{{ progress.filled }}/{{ progress.total }} {{ $t('home.matches') }}</p>
+      </div>
+      <div v-if="myRanking && !authStore.isAdmin" class="card text-center">
+        <p class="text-gray-500 text-sm mb-1">{{ $t('home.yourPosition') }}</p>
+        <p class="text-3xl font-bold" :class="myRanking.rank <= 3 ? 'text-accent' : 'text-primary'">
+          #{{ myRanking.rank }}
+        </p>
+        <p class="text-xs text-gray-400 mt-1">{{ myRanking.totalPoints }} {{ $t('positions.points') }}</p>
       </div>
     </div>
 
@@ -56,13 +63,14 @@
 </template>
 
 <script setup lang="ts">
-import type { PredictionProgress } from '~/types'
+import type { PredictionProgress, LeaderboardEntry } from '~/types'
 
 definePageMeta({ middleware: 'auth' })
 
 const authStore = useAuthStore()
 const { apiFetch } = useApi()
 const progress = ref<PredictionProgress | null>(null)
+const myRanking = ref<LeaderboardEntry | null>(null)
 
 onMounted(async () => {
   await authStore.fetchProfile()
@@ -71,5 +79,10 @@ onMounted(async () => {
       progress.value = await apiFetch<PredictionProgress>('/api/predictions/progress')
     } catch {}
   }
+  try {
+    const rankings = await apiFetch<LeaderboardEntry[]>('/api/leaderboard')
+    const userId = authStore.user?.id || authStore.user?._id
+    myRanking.value = rankings.find((r) => r.userId === userId) || null
+  } catch {}
 })
 </script>

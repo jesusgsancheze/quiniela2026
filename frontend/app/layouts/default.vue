@@ -18,10 +18,16 @@
                 <NuxtLink to="/admin/players" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
                   {{ $t('nav.players') }}
                 </NuxtLink>
+                <NuxtLink to="/admin/payments" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
+                  {{ $t('nav.paymentSettings') }}
+                </NuxtLink>
               </template>
               <template v-else>
                 <NuxtLink to="/predictions" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
                   {{ $t('nav.myPredictions') }}
+                </NuxtLink>
+                <NuxtLink to="/payment" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
+                  {{ $t('nav.payment') }}
                 </NuxtLink>
               </template>
               <NuxtLink to="/standings" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">

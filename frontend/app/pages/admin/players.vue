@@ -13,6 +13,7 @@
             <th class="py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('admin.players.role') }}</th>
             <th class="py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('admin.players.status') }}</th>
             <th class="py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('admin.players.progress') }}</th>
+            <th class="py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('admin.players.payment') }}</th>
             <th class="py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('admin.players.actions') }}</th>
           </tr>
         </thead>
@@ -52,6 +53,26 @@
                 </div>
               </div>
               <span v-else class="text-xs text-gray-400">0%</span>
+            </td>
+            <td class="py-3 px-4 text-center">
+              <div v-if="player.role !== 'admin'" class="flex items-center justify-center gap-2">
+                <span :class="[
+                  'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                  player.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-800' :
+                  player.paymentStatus === 'reported' ? 'bg-blue-100 text-blue-800' :
+                  'bg-gray-100 text-gray-600'
+                ]">
+                  {{ $t(`admin.players.payment${capitalize(player.paymentStatus || 'pending')}`) }}
+                </span>
+                <template v-if="player.paymentStatus === 'reported'">
+                  <button @click="confirmPayment(player._id)" class="text-green-600 hover:text-green-800 text-xs font-semibold">
+                    {{ $t('admin.players.confirmPayment') }}
+                  </button>
+                  <button @click="rejectPayment(player._id)" class="text-red-500 hover:text-red-700 text-xs font-semibold">
+                    {{ $t('admin.players.rejectPayment') }}
+                  </button>
+                </template>
+              </div>
             </td>
             <td class="py-3 px-4">
               <div v-if="player.role !== 'admin'" class="flex items-center justify-center gap-2 flex-wrap">
@@ -107,6 +128,7 @@ type PlayerWithProgress = User & { _id: string; progress?: PredictionProgress }
 definePageMeta({ middleware: 'admin' })
 
 const { t } = useI18n()
+const toast = useToast()
 const { apiFetch } = useApi()
 const players = ref<PlayerWithProgress[]>([])
 const loading = ref(true)
@@ -114,8 +136,30 @@ const togglingId = ref<string | null>(null)
 const resettingId = ref<string | null>(null)
 const newPassword = ref('')
 
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
 async function fetchPlayers() {
   players.value = await apiFetch<PlayerWithProgress[]>('/api/users')
+}
+
+async function confirmPayment(userId: string) {
+  try {
+    await apiFetch(`/api/payments/${userId}/confirm`, { method: 'PATCH' })
+    await fetchPlayers()
+  } catch (e: any) {
+    toast.error(e?.data?.message || 'Failed')
+  }
+}
+
+async function rejectPayment(userId: string) {
+  try {
+    await apiFetch(`/api/payments/${userId}/reject`, { method: 'PATCH' })
+    await fetchPlayers()
+  } catch (e: any) {
+    toast.error(e?.data?.message || 'Failed')
+  }
 }
 
 async function toggleStatus(player: PlayerWithProgress) {
@@ -128,7 +172,7 @@ async function toggleStatus(player: PlayerWithProgress) {
     })
     await fetchPlayers()
   } catch (e: any) {
-    alert(e?.data?.message || t('admin.players.updateFailed'))
+    toast.error(e?.data?.message || t('admin.players.updateFailed'))
   } finally {
     togglingId.value = null
   }
@@ -150,10 +194,10 @@ async function confirmReset(playerId: string) {
       method: 'PATCH',
       body: { newPassword: newPassword.value },
     })
-    alert(t('admin.players.resetSuccess'))
+    toast.success(t('admin.players.resetSuccess'))
     cancelReset()
   } catch (e: any) {
-    alert(e?.data?.message || t('admin.players.resetFailed'))
+    toast.error(e?.data?.message || t('admin.players.resetFailed'))
   }
 }
 

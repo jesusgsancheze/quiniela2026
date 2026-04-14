@@ -12,7 +12,9 @@
     "positions": "Posiciones",
     "profile": "Perfil",
     "changePassword": "Cambiar Contraseña",
-    "logout": "Cerrar Sesión"
+    "logout": "Cerrar Sesión",
+    "payment": "Pago",
+    "paymentSettings": "Config. Pagos"
   },
   "auth": {
     "signIn": "Iniciar Sesión",
@@ -31,6 +33,26 @@
     "registrationFailed": "Error al registrarse",
     "passwordsNoMatch": "Las contraseñas no coinciden",
     "minPassword": "Mínimo 6 caracteres",
+    "registerSuccess": "Registro exitoso. Por favor revisa tu correo para verificar tu cuenta.",
+    "emailNotVerified": "Por favor verifica tu correo antes de iniciar sesión",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "forgotPasswordTitle": "Restablecer Contraseña",
+    "forgotPasswordDesc": "Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.",
+    "sendResetLink": "Enviar Enlace",
+    "sending": "Enviando...",
+    "resetLinkSent": "Si existe una cuenta, se ha enviado un correo para restablecer la contraseña.",
+    "resetPasswordTitle": "Nueva Contraseña",
+    "resetPasswordBtn": "Restablecer Contraseña",
+    "resetting": "Restableciendo...",
+    "resetSuccess": "Contraseña restablecida exitosamente. Ya puedes iniciar sesión.",
+    "resetFailed": "Enlace de restablecimiento inválido o expirado",
+    "verifyTitle": "Verificación de Correo",
+    "verifying": "Verificando tu correo...",
+    "verifySuccess": "Correo verificado exitosamente. Ya puedes iniciar sesión.",
+    "verifyFailed": "Enlace de verificación inválido o expirado.",
+    "resendVerification": "Reenviar correo de verificación",
+    "resendSent": "Correo de verificación enviado. Revisa tu bandeja.",
+    "backToLogin": "Volver a Iniciar Sesión",
     "emailPlaceholder": "tu{'@'}correo.com"
   },
   "home": {
@@ -48,7 +70,8 @@
     "myPredictions": "Mis Predicciones",
     "myPredictionsDesc": "Ingresa tus predicciones para todos los partidos",
     "leaderboard": "Tabla de Posiciones",
-    "leaderboardDesc": "Ver las posiciones y rankings actuales"
+    "leaderboardDesc": "Ver las posiciones y rankings actuales",
+    "yourPosition": "Tu Posición"
   },
   "predictions": {
     "title": "Mis Predicciones",
@@ -118,7 +141,31 @@
       "resetConfirm": "Restablecer",
       "resetSuccess": "Contraseña restablecida exitosamente",
       "resetFailed": "Error al restablecer contraseña",
-      "progress": "Progreso"
+      "progress": "Progreso",
+      "payment": "Pago",
+      "paymentPending": "Pendiente",
+      "paymentReported": "Reportado",
+      "paymentConfirmed": "Confirmado",
+      "confirmPayment": "Confirmar",
+      "rejectPayment": "Rechazar"
+    },
+    "payments": {
+      "title": "Configuración de Pagos",
+      "price": "Precio",
+      "currency": "Moneda",
+      "methods": "Métodos de Pago",
+      "methodLabel": "Etiqueta (ej. Cuenta Bancaria, PayPal)",
+      "methodValue": "Valor (ej. número de cuenta, email)",
+      "methodDetails": "Detalles adicionales (ej. titular de cuenta, banco, referencia)",
+      "addMethod": "Agregar Método",
+      "instructions": "Instrucciones de Pago",
+      "contactEmail": "Email de Contacto",
+      "contactPhone": "Teléfono de Contacto",
+      "save": "Guardar Configuración",
+      "saving": "Guardando...",
+      "saved": "Configuración de pagos guardada",
+      "saveFailed": "Error al guardar configuración",
+      "removeMethod": "Eliminar"
     },
     "positions": {
       "title": "Posiciones"
@@ -155,6 +202,24 @@
     "noPrediction": "Sin predicción",
     "saved": "Guardado",
     "saving": "Guardando..."
+  },
+  "payment": {
+    "title": "Pago",
+    "priceLabel": "Cuota de Entrada",
+    "howToPay": "Cómo Pagar",
+    "contactInfo": "Contacto para Reportar Pago",
+    "reportPayment": "Reportar Mi Pago",
+    "reporting": "Reportando...",
+    "reported": "Pago reportado exitosamente",
+    "reportFailed": "Error al reportar pago",
+    "note": "Nota de pago (opcional)",
+    "notePlaceholder": "ej. Referencia de transferencia, fecha de pago",
+    "statusPending": "Aún no has reportado tu pago",
+    "statusReported": "Tu pago ha sido reportado y está pendiente de confirmación",
+    "statusConfirmed": "Tu pago ha sido confirmado",
+    "alreadyReported": "Pago Ya Reportado",
+    "copy": "Copiar",
+    "copied": "Copiado!"
   },
   "common": {
     "active": "activo",

@@ -107,6 +107,7 @@ import type { Match } from '~/types'
 definePageMeta({ middleware: 'admin' })
 
 const { t } = useI18n()
+const toast = useToast()
 const { apiFetch } = useApi()
 const matchesStore = useMatchesStore()
 const loading = ref(true)
@@ -144,7 +145,7 @@ async function clearResult(matchId: string) {
     await apiFetch(`/api/matches/${matchId}/result`, { method: 'DELETE' })
     await matchesStore.fetchMatches()
   } catch (e: any) {
-    alert(e?.data?.message || t('admin.games.clearFailed'))
+    toast.error(e?.data?.message || t('admin.games.clearFailed'))
   }
 }
 
@@ -158,7 +159,7 @@ async function saveResult(matchId: string) {
     editingMatch.value = null
     await matchesStore.fetchMatches()
   } catch (e: any) {
-    alert(e?.data?.message || t('admin.games.saveFailed'))
+    toast.error(e?.data?.message || t('admin.games.saveFailed'))
   } finally {
     saving.value = false
   }
@@ -169,10 +170,10 @@ async function autoFillResults() {
   bulkLoading.value = true
   try {
     const res = await apiFetch<{ filled: number }>('/api/matches/auto-fill', { method: 'POST' })
-    alert(t('admin.games.autoFillSuccess', { count: res.filled }))
+    toast.success(t('admin.games.autoFillSuccess', { count: res.filled }))
     await matchesStore.fetchMatches()
   } catch (e: any) {
-    alert(e?.data?.message || t('admin.games.autoFillFailed'))
+    toast.error(e?.data?.message || t('admin.games.autoFillFailed'))
   } finally {
     bulkLoading.value = false
   }
@@ -183,10 +184,10 @@ async function clearAllResults() {
   bulkLoading.value = true
   try {
     const res = await apiFetch<{ cleared: number }>('/api/matches/results/all', { method: 'DELETE' })
-    alert(t('admin.games.clearAllSuccess', { count: res.cleared }))
+    toast.success(t('admin.games.clearAllSuccess', { count: res.cleared }))
     await matchesStore.fetchMatches()
   } catch (e: any) {
-    alert(e?.data?.message || t('admin.games.clearAllFailed'))
+    toast.error(e?.data?.message || t('admin.games.clearAllFailed'))
   } finally {
     bulkLoading.value = false
   }

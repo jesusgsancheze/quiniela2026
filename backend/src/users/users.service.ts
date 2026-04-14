@@ -78,4 +78,56 @@ export class UsersService {
     }
     return user;
   }
+
+  async setVerificationToken(
+    userId: string,
+    token: string,
+  ): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userId, {
+      verificationToken: token,
+    });
+  }
+
+  async verifyEmail(token: string): Promise<User | null> {
+    const user = await this.userModel
+      .findOneAndUpdate(
+        { verificationToken: token },
+        { emailVerified: true, verificationToken: null },
+        { new: true },
+      )
+      .select('-password')
+      .exec();
+    return user;
+  }
+
+  async setResetToken(
+    userId: string,
+    token: string,
+    expires: Date,
+  ): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userId, {
+      resetPasswordToken: token,
+      resetPasswordExpires: expires,
+    });
+  }
+
+  async findByResetToken(token: string): Promise<User | null> {
+    return this.userModel
+      .findOne({
+        resetPasswordToken: token,
+        resetPasswordExpires: { $gt: new Date() },
+      })
+      .exec();
+  }
+
+  async resetPassword(
+    userId: string,
+    hashedPassword: string,
+  ): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userId, {
+      password: hashedPassword,
+      resetPasswordToken: null,
+      resetPasswordExpires: null,
+    });
+  }
 }

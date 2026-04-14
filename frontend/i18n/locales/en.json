@@ -12,7 +12,9 @@
     "positions": "Positions",
     "profile": "Profile",
     "changePassword": "Change Password",
-    "logout": "Logout"
+    "logout": "Logout",
+    "payment": "Payment",
+    "paymentSettings": "Payment Settings"
   },
   "auth": {
     "signIn": "Sign In",
@@ -31,6 +33,26 @@
     "registrationFailed": "Registration failed",
     "passwordsNoMatch": "Passwords do not match",
     "minPassword": "Minimum 6 characters",
+    "registerSuccess": "Registration successful! Please check your email to verify your account.",
+    "emailNotVerified": "Please verify your email before logging in",
+    "forgotPassword": "Forgot your password?",
+    "forgotPasswordTitle": "Reset Password",
+    "forgotPasswordDesc": "Enter your email and we'll send you a link to reset your password.",
+    "sendResetLink": "Send Reset Link",
+    "sending": "Sending...",
+    "resetLinkSent": "If an account exists, a password reset email has been sent.",
+    "resetPasswordTitle": "Set New Password",
+    "resetPasswordBtn": "Reset Password",
+    "resetting": "Resetting...",
+    "resetSuccess": "Password reset successfully. You can now log in.",
+    "resetFailed": "Invalid or expired reset link",
+    "verifyTitle": "Email Verification",
+    "verifying": "Verifying your email...",
+    "verifySuccess": "Email verified successfully! You can now log in.",
+    "verifyFailed": "Invalid or expired verification link.",
+    "resendVerification": "Resend verification email",
+    "resendSent": "Verification email sent. Check your inbox.",
+    "backToLogin": "Back to Login",
     "emailPlaceholder": "your{'@'}email.com"
   },
   "home": {
@@ -48,7 +70,8 @@
     "myPredictions": "My Predictions",
     "myPredictionsDesc": "Submit your predictions for all matches",
     "leaderboard": "Leaderboard",
-    "leaderboardDesc": "See the current standings and rankings"
+    "leaderboardDesc": "See the current standings and rankings",
+    "yourPosition": "Your Position"
   },
   "predictions": {
     "title": "My Predictions",
@@ -118,7 +141,31 @@
       "resetConfirm": "Reset",
       "resetSuccess": "Password reset successfully",
       "resetFailed": "Failed to reset password",
-      "progress": "Progress"
+      "progress": "Progress",
+      "payment": "Payment",
+      "paymentPending": "Pending",
+      "paymentReported": "Reported",
+      "paymentConfirmed": "Confirmed",
+      "confirmPayment": "Confirm",
+      "rejectPayment": "Reject"
+    },
+    "payments": {
+      "title": "Payment Settings",
+      "price": "Price",
+      "currency": "Currency",
+      "methods": "Payment Methods",
+      "methodLabel": "Label (e.g. Bank Account, PayPal)",
+      "methodValue": "Value (e.g. account number, email)",
+      "methodDetails": "Additional details (e.g. account holder, bank name, reference)",
+      "addMethod": "Add Method",
+      "instructions": "Payment Instructions",
+      "contactEmail": "Contact Email",
+      "contactPhone": "Contact Phone",
+      "save": "Save Settings",
+      "saving": "Saving...",
+      "saved": "Payment settings saved",
+      "saveFailed": "Failed to save settings",
+      "removeMethod": "Remove"
     },
     "positions": {
       "title": "Positions"
@@ -155,6 +202,24 @@
     "noPrediction": "No prediction",
     "saved": "Saved",
     "saving": "Saving..."
+  },
+  "payment": {
+    "title": "Payment",
+    "priceLabel": "Pool Entry Fee",
+    "howToPay": "How to Pay",
+    "contactInfo": "Contact to Report Payment",
+    "reportPayment": "Report My Payment",
+    "reporting": "Reporting...",
+    "reported": "Payment reported successfully",
+    "reportFailed": "Failed to report payment",
+    "note": "Payment note (optional)",
+    "notePlaceholder": "e.g. Transfer reference, date of payment",
+    "statusPending": "You have not reported your payment yet",
+    "statusReported": "Your payment has been reported and is pending confirmation",
+    "statusConfirmed": "Your payment has been confirmed",
+    "alreadyReported": "Payment Already Reported",
+    "copy": "Copy",
+    "copied": "Copied!"
   },
   "common": {
     "active": "active",

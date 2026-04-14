@@ -7,6 +7,8 @@ export interface User {
   role: 'admin' | 'player'
   status: 'active' | 'inactive'
   profilePicture: string | null
+  paymentStatus?: 'pending' | 'reported' | 'confirmed'
+  paymentNote?: string | null
 }
 
 export interface Team {
@@ -64,6 +66,22 @@ export interface PredictionProgress {
   filled: number
   total: number
   percentage: number
+}
+
+export interface PaymentMethod {
+  label: string
+  value: string
+  details?: string
+}
+
+export interface PaymentConfig {
+  _id?: string
+  price: number
+  currency: string
+  paymentMethods: PaymentMethod[]
+  instructions: string
+  contactEmail: string
+  contactPhone: string
 }
 
 export interface AuthResponse {

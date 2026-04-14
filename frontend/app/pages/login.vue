@@ -20,7 +20,21 @@
       <button type="submit" :disabled="loading" class="btn-primary w-full">
         {{ loading ? $t('auth.signingIn') : $t('auth.signIn') }}
       </button>
+
+      <div class="text-center">
+        <NuxtLink to="/forgot-password" class="text-sm text-gray-500 hover:text-secondary hover:underline">
+          {{ $t('auth.forgotPassword') }}
+        </NuxtLink>
+      </div>
     </form>
+
+    <!-- Resend verification if email not verified -->
+    <div v-if="showResend" class="mt-4">
+      <button @click="resendVerification" :disabled="resending" class="btn-outline w-full text-sm">
+        {{ resending ? $t('auth.sending') : $t('auth.resendVerification') }}
+      </button>
+      <p v-if="resendSuccess" class="text-green-600 text-xs mt-2 text-center">{{ $t('auth.resendSent') }}</p>
+    </div>
 
     <p class="text-center text-sm text-gray-600 mt-4">
       {{ $t('auth.noAccount') }}
@@ -42,11 +56,15 @@ const authStore = useAuthStore()
 const { apiFetch } = useApi()
 const loading = ref(false)
 const error = ref('')
+const showResend = ref(false)
+const resending = ref(false)
+const resendSuccess = ref(false)
 const form = reactive({ email: '', password: '' })
 
 async function handleLogin() {
   loading.value = true
   error.value = ''
+  showResend.value = false
   try {
     const data = await apiFetch<AuthResponse>('/api/auth/login', {
       method: 'POST',
@@ -55,9 +73,28 @@ async function handleLogin() {
     authStore.setAuth(data)
     navigateTo('/')
   } catch (e: any) {
-    error.value = e?.data?.message || t('auth.invalidCredentials')
+    const msg = e?.data?.message || ''
+    if (msg.includes('verify your email')) {
+      error.value = t('auth.emailNotVerified')
+      showResend.value = true
+    } else {
+      error.value = msg || t('auth.invalidCredentials')
+    }
   } finally {
     loading.value = false
   }
+}
+
+async function resendVerification() {
+  resending.value = true
+  resendSuccess.value = false
+  try {
+    await apiFetch('/api/auth/resend-verification', {
+      method: 'POST',
+      body: { email: form.email },
+    })
+    resendSuccess.value = true
+  } catch {}
+  resending.value = false
 }
 </script>

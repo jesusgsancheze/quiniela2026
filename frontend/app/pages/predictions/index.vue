@@ -70,6 +70,7 @@ import type { Match, Prediction } from '~/types'
 definePageMeta({ middleware: 'auth' })
 
 const { t } = useI18n()
+const toast = useToast()
 const authStore = useAuthStore()
 const matchesStore = useMatchesStore()
 const predictionsStore = usePredictionsStore()
@@ -122,7 +123,7 @@ async function handleSave(data: { matchId: string; score1: number; score2: numbe
   try {
     await predictionsStore.savePrediction(data.matchId, data.score1, data.score2)
   } catch (e: any) {
-    alert(e?.data?.message || t('predictions.saveFailed'))
+    toast.error(e?.data?.message || t('predictions.saveFailed'))
   }
 }
 
