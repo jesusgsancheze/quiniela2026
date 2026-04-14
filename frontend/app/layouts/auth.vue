@@ -4,6 +4,7 @@
       <div class="text-center mb-8">
         <h1 class="text-4xl font-bold text-white mb-2">{{ $t('app.title') }}</h1>
         <p class="text-accent text-lg">{{ $t('app.subtitle') }}</p>
+        <img src="~/assets/img/wc_img.webp" alt="Logo" class="mx-auto mt-6 w-24 h-24 object-contain" />
         <div class="flex justify-center gap-2 mt-3">
           <div class="w-8 h-1 bg-accent rounded"></div>
           <div class="w-8 h-1 bg-white rounded"></div>
