@@ -2,10 +2,22 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  ssr: false,
+  app: {
+    head: {
+      title: 'Quiniela 2026 - FIFA World Cup',
+      link: [
+        { rel: 'icon', type: 'image/webp', href: '/favicon.webp' },
+      ],
+      meta: [
+        { name: 'description', content: 'Quiniela de la Copa del Mundo FIFA 2026 - Football Pools' },
+      ],
+    },
+  },
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss', '@nuxtjs/i18n'],
   runtimeConfig: {
     public: {
-      apiBase: 'http://localhost:3001',
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3001',
     },
   },
   css: ['~/assets/css/main.css'],

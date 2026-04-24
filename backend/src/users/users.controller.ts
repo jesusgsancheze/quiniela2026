@@ -12,10 +12,20 @@ import {
   FileTypeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { S3Client } from '@aws-sdk/client-s3';
+import multerS3 from 'multer-s3';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
+
+const r2Client = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID ?? '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? '',
+  },
+});
 import { UsersService } from './users.service.js';
 import { PredictionsService } from '../predictions/predictions.service.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
@@ -55,10 +65,12 @@ export class UsersController {
   @Post('me/avatar')
   @UseInterceptors(
     FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (_req, file, cb) => {
-          const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
+      storage: multerS3({
+        s3: r2Client,
+        bucket: process.env.R2_BUCKET ?? '',
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        key: (_req, file, cb) => {
+          const uniqueName = `avatars/${uuidv4()}${extname(file.originalname)}`;
           cb(null, uniqueName);
         },
       }),
@@ -74,11 +86,12 @@ export class UsersController {
         ],
       }),
     )
-    file: Express.Multer.File,
+    file: Express.Multer.File & { key: string },
   ) {
+    const publicUrl = `${process.env.R2_PUBLIC_URL}/${file.key}`;
     return this.usersService.updateProfilePicture(
       user._id.toString(),
-      file.filename,
+      publicUrl,
     );
   }
 

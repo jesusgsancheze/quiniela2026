@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { APP_GUARD } from '@nestjs/core';
-import { join, resolve } from 'path';
+import { resolve } from 'path';
 import { AuthModule } from './auth/auth.module.js';
 import { UsersModule } from './users/users.module.js';
 import { TeamsModule } from './teams/teams.module.js';
@@ -29,10 +28,6 @@ import { RolesGuard } from './common/guards/roles.guard.js';
         uri: configService.get<string>('MONGODB_URI'),
       }),
       inject: [ConfigService],
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: '/uploads',
     }),
     AuthModule,
     UsersModule,

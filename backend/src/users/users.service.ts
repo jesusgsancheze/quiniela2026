@@ -63,12 +63,12 @@ export class UsersService {
 
   async updateProfilePicture(
     userId: string,
-    filename: string,
+    profilePicture: string,
   ): Promise<User> {
     const user = await this.userModel
       .findByIdAndUpdate(
         userId,
-        { profilePicture: filename },
+        { profilePicture },
         { new: true },
       )
       .select('-password')
