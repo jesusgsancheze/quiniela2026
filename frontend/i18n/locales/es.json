@@ -84,7 +84,21 @@
     "loading": "Cargando partidos...",
     "save": "Guardar",
     "update": "Actualizar",
-    "saveFailed": "Error al guardar predicción"
+    "saveFailed": "Error al guardar predicción",
+    "entryNumber": "Quiniela #{n}",
+    "noActiveTitle": "Sin predicción activa",
+    "noActiveDesc": "Comienza una nueva predicción para empezar a jugar.",
+    "startNewEntry": "Iniciar Nueva Predicción",
+    "newPrediction": "Nueva Predicción",
+    "creatingEntry": "Creando...",
+    "entryCompleteTitle": "Esta predicción está completa",
+    "entryCompleteDesc": "¿Quieres jugar otra? Inicia una nueva predicción (requiere pago).",
+    "newEntryCreated": "Nueva predicción creada. Por favor paga para activarla.",
+    "newEntryFailed": "No se pudo crear una nueva predicción",
+    "paymentRequired": "Se requiere pago para activar esta predicción",
+    "paymentAwaitingApproval": "El pago está pendiente de aprobación del administrador",
+    "goToPayment": "Podrás ingresar tus predicciones cuando un administrador confirme tu pago.",
+    "openPayment": "Ir al pago"
   },
   "positions": {
     "title": "Tabla de Posiciones",
@@ -92,6 +106,7 @@
     "noResults": "Sin resultados aún",
     "noResultsDesc": "Las posiciones aparecerán cuando se ingresen resultados de partidos",
     "player": "Jugador",
+    "entry": "Quiniela",
     "matches": "Partidos",
     "points": "Puntos"
   },
@@ -147,7 +162,9 @@
       "paymentReported": "Reportado",
       "paymentConfirmed": "Confirmado",
       "confirmPayment": "Confirmar",
-      "rejectPayment": "Rechazar"
+      "rejectPayment": "Rechazar",
+      "showHistory": "Ver historial ({n})",
+      "hideHistory": "Ocultar historial"
     },
     "payments": {
       "title": "Configuración de Pagos",
@@ -219,7 +236,15 @@
     "statusConfirmed": "Tu pago ha sido confirmado",
     "alreadyReported": "Pago Ya Reportado",
     "copy": "Copiar",
-    "copied": "Copiado!"
+    "copied": "Copiado!",
+    "history": "Historial de Quinielas",
+    "noActiveEntry": "No tienes una quiniela activa en este momento.",
+    "noActiveAfterCompletion": "Tu última predicción está completa. Inicia una nueva y paga para seguir jugando.",
+    "statusPendingShort": "Pendiente",
+    "statusReportedShort": "Reportado",
+    "statusConfirmedShort": "Confirmado",
+    "entryStatusActive": "Activa",
+    "entryStatusCompleted": "Completada"
   },
   "common": {
     "active": "activo",

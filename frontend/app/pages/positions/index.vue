@@ -17,6 +17,7 @@
           <tr class="border-b-2 border-primary">
             <th class="py-3 px-4 text-left text-sm font-semibold text-primary">#</th>
             <th class="py-3 px-4 text-left text-sm font-semibold text-primary">{{ $t('positions.player') }}</th>
+            <th class="py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.entry') }}</th>
             <th class="py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.matches') }}</th>
             <th class="py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.points') }}</th>
           </tr>
@@ -24,7 +25,7 @@
         <tbody>
           <tr
             v-for="entry in rankings"
-            :key="entry.userId"
+            :key="entry.entryId"
             :class="[
               'border-b border-gray-100 hover:bg-gray-50 transition-colors',
               isCurrentUser(entry.userId) ? 'bg-accent/10' : ''
@@ -56,6 +57,11 @@
                   <p class="text-xs text-gray-400">{{ entry.email }}</p>
                 </div>
               </div>
+            </td>
+            <td class="py-3 px-4 text-center text-gray-600">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                #{{ entry.entryNumber }}
+              </span>
             </td>
             <td class="py-3 px-4 text-center text-gray-600">{{ entry.matchesScored }}</td>
             <td class="py-3 px-4 text-center">

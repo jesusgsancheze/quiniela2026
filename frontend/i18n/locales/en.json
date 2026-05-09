@@ -84,7 +84,21 @@
     "loading": "Loading matches...",
     "save": "Save",
     "update": "Update",
-    "saveFailed": "Failed to save prediction"
+    "saveFailed": "Failed to save prediction",
+    "entryNumber": "Entry #{n}",
+    "noActiveTitle": "No active prediction",
+    "noActiveDesc": "Start a new prediction to begin playing.",
+    "startNewEntry": "Start New Prediction",
+    "newPrediction": "New Prediction",
+    "creatingEntry": "Creating...",
+    "entryCompleteTitle": "This prediction is complete",
+    "entryCompleteDesc": "Want to play another? Start a new prediction (requires payment).",
+    "newEntryCreated": "New prediction created. Please pay to activate it.",
+    "newEntryFailed": "Could not create a new prediction",
+    "paymentRequired": "Payment required to activate this entry",
+    "paymentAwaitingApproval": "Payment is awaiting admin approval",
+    "goToPayment": "You can submit predictions once an admin confirms your payment.",
+    "openPayment": "Go to payment"
   },
   "positions": {
     "title": "Leaderboard",
@@ -92,6 +106,7 @@
     "noResults": "No results yet",
     "noResultsDesc": "Positions will appear once match results are entered",
     "player": "Player",
+    "entry": "Entry",
     "matches": "Matches",
     "points": "Points"
   },
@@ -147,7 +162,9 @@
       "paymentReported": "Reported",
       "paymentConfirmed": "Confirmed",
       "confirmPayment": "Confirm",
-      "rejectPayment": "Reject"
+      "rejectPayment": "Reject",
+      "showHistory": "Show history ({n})",
+      "hideHistory": "Hide history"
     },
     "payments": {
       "title": "Payment Settings",
@@ -219,7 +236,15 @@
     "statusConfirmed": "Your payment has been confirmed",
     "alreadyReported": "Payment Already Reported",
     "copy": "Copy",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "history": "Entry History",
+    "noActiveEntry": "You don't have an active entry right now.",
+    "noActiveAfterCompletion": "Your last prediction is complete. Start a new one and pay to keep playing.",
+    "statusPendingShort": "Pending",
+    "statusReportedShort": "Reported",
+    "statusConfirmedShort": "Confirmed",
+    "entryStatusActive": "Active",
+    "entryStatusCompleted": "Completed"
   },
   "common": {
     "active": "active",

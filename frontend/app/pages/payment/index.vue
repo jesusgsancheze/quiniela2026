@@ -5,24 +5,38 @@
     <div v-if="loading" class="text-center py-12 text-gray-500">...</div>
 
     <template v-else>
-      <!-- Payment status banner -->
+      <!-- Active entry banner -->
       <div
+        v-if="activeEntry"
         :class="[
           'px-6 py-4 rounded-xl mb-6',
-          paymentStatus === 'confirmed' ? 'bg-green-50 border border-green-200 text-green-800' :
-          paymentStatus === 'reported' ? 'bg-blue-50 border border-blue-200 text-blue-800' :
+          activeEntry.paymentStatus === 'confirmed' ? 'bg-green-50 border border-green-200 text-green-800' :
+          activeEntry.paymentStatus === 'reported' ? 'bg-blue-50 border border-blue-200 text-blue-800' :
           'bg-yellow-50 border border-yellow-200 text-yellow-800'
         ]"
       >
         <p class="font-semibold">
-          {{ paymentStatus === 'confirmed' ? $t('payment.statusConfirmed') :
-             paymentStatus === 'reported' ? $t('payment.statusReported') :
+          {{ $t('predictions.entryNumber', { n: activeEntry.entryNumber }) }} —
+          {{ activeEntry.paymentStatus === 'confirmed' ? $t('payment.statusConfirmed') :
+             activeEntry.paymentStatus === 'reported' ? $t('payment.statusReported') :
              $t('payment.statusPending') }}
         </p>
       </div>
 
+      <!-- No active entry -->
+      <div v-else-if="entriesStore.canRequestNewEntry" class="card mb-6 text-center">
+        <p class="text-gray-700 mb-4">{{ $t('payment.noActiveAfterCompletion') }}</p>
+        <button @click="createNewEntry" :disabled="creating" class="btn-primary">
+          {{ creating ? $t('predictions.creatingEntry') : $t('predictions.newPrediction') }}
+        </button>
+      </div>
+
+      <div v-else class="card mb-6 text-center text-gray-600">
+        {{ $t('payment.noActiveEntry') }}
+      </div>
+
       <!-- Pricing -->
-      <div v-if="config" class="card mb-6">
+      <div v-if="config && activeEntry && activeEntry.paymentStatus !== 'confirmed'" class="card mb-6">
         <h2 class="text-lg font-semibold text-primary mb-4">{{ $t('payment.priceLabel') }}</h2>
         <p class="text-4xl font-bold text-accent">
           {{ config.currency }} ${{ config.price }}
@@ -32,9 +46,11 @@
         </p>
       </div>
 
-      <!-- Payment methods -->
       <!-- Payment options -->
-      <div v-if="config && config.paymentMethods.length > 0" class="mb-6">
+      <div
+        v-if="config && activeEntry && activeEntry.paymentStatus !== 'confirmed' && config.paymentMethods.length > 0"
+        class="mb-6"
+      >
         <h2 class="text-lg font-semibold text-primary mb-4">{{ $t('payment.howToPay') }}</h2>
         <div class="space-y-4">
           <div
@@ -80,7 +96,10 @@
       </div>
 
       <!-- Contact info -->
-      <div v-if="config && (config.contactEmail || config.contactPhone)" class="card mb-6">
+      <div
+        v-if="config && activeEntry && activeEntry.paymentStatus !== 'confirmed' && (config.contactEmail || config.contactPhone)"
+        class="card mb-6"
+      >
         <h2 class="text-lg font-semibold text-primary mb-4">{{ $t('payment.contactInfo') }}</h2>
         <div class="space-y-2 text-sm">
           <p v-if="config.contactEmail" class="text-gray-600">
@@ -93,7 +112,7 @@
       </div>
 
       <!-- Report payment form -->
-      <div v-if="paymentStatus === 'pending'" class="card">
+      <div v-if="activeEntry && activeEntry.paymentStatus === 'pending'" class="card">
         <h2 class="text-lg font-semibold text-primary mb-4">{{ $t('payment.reportPayment') }}</h2>
         <div class="space-y-4">
           <div>
@@ -111,32 +130,65 @@
         </div>
       </div>
 
-      <div v-else-if="paymentStatus === 'reported'" class="card text-center py-6">
+      <div v-else-if="activeEntry && activeEntry.paymentStatus === 'reported'" class="card text-center py-6">
         <p class="text-blue-600 font-semibold">{{ $t('payment.alreadyReported') }}</p>
-        <p v-if="authStore.user?.paymentNote" class="text-sm text-gray-500 mt-2">
-          {{ $t('payment.note') }}: {{ authStore.user.paymentNote }}
+        <p v-if="activeEntry.paymentNote" class="text-sm text-gray-500 mt-2">
+          {{ $t('payment.note') }}: {{ activeEntry.paymentNote }}
         </p>
+      </div>
+
+      <!-- History -->
+      <div v-if="historyEntries.length > 0" class="card mt-8">
+        <h2 class="text-lg font-semibold text-primary mb-4">{{ $t('payment.history') }}</h2>
+        <ul class="divide-y divide-gray-100">
+          <li v-for="e in historyEntries" :key="e._id" class="py-2 flex items-center justify-between text-sm">
+            <span class="font-medium text-gray-700">
+              {{ $t('predictions.entryNumber', { n: e.entryNumber }) }}
+            </span>
+            <span class="flex items-center gap-2">
+              <span :class="[
+                'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                e.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-800' :
+                e.paymentStatus === 'reported' ? 'bg-blue-100 text-blue-800' :
+                'bg-gray-100 text-gray-600'
+              ]">{{ $t(`payment.status${capitalize(e.paymentStatus)}Short`) }}</span>
+              <span :class="[
+                'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                e.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+              ]">{{ $t(`payment.entryStatus${capitalize(e.status)}`) }}</span>
+            </span>
+          </li>
+        </ul>
       </div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { PaymentConfig } from '~/types'
+import type { PaymentConfig, Entry } from '~/types'
 
 definePageMeta({ middleware: 'auth' })
 
 const { t } = useI18n()
 const toast = useToast()
 const authStore = useAuthStore()
+const entriesStore = useEntriesStore()
 const { apiFetch } = useApi()
 const config = ref<PaymentConfig | null>(null)
 const loading = ref(true)
 const reporting = ref(false)
+const creating = ref(false)
 const note = ref('')
 const copiedKey = ref<string | null>(null)
 
-const paymentStatus = computed(() => authStore.user?.paymentStatus || 'pending')
+const activeEntry = computed<Entry | null>(() => entriesStore.activeEntry)
+const historyEntries = computed<Entry[]>(() =>
+  entriesStore.entries.filter((e) => !activeEntry.value || e._id !== activeEntry.value._id),
+)
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
 
 async function copyToClipboard(text: string, key: string) {
   try {
@@ -149,10 +201,7 @@ async function copyToClipboard(text: string, key: string) {
 async function reportPayment() {
   reporting.value = true
   try {
-    await apiFetch('/api/payments/report', {
-      method: 'PATCH',
-      body: { note: note.value },
-    })
+    await entriesStore.reportPayment(note.value)
     await authStore.fetchProfile()
     toast.success(t('payment.reported'))
   } catch (e: any) {
@@ -162,10 +211,25 @@ async function reportPayment() {
   }
 }
 
+async function createNewEntry() {
+  creating.value = true
+  try {
+    await entriesStore.createNewEntry()
+    toast.success(t('predictions.newEntryCreated'))
+  } catch (e: any) {
+    toast.error(e?.data?.message || t('predictions.newEntryFailed'))
+  } finally {
+    creating.value = false
+  }
+}
+
 onMounted(async () => {
   try {
-    await authStore.fetchProfile()
-    config.value = await apiFetch<PaymentConfig>('/api/payments/config')
+    await Promise.all([
+      authStore.fetchProfile(),
+      entriesStore.fetchMine(),
+      apiFetch<PaymentConfig>('/api/payments/config').then((c) => (config.value = c)),
+    ])
   } finally {
     loading.value = false
   }

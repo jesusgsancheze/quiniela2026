@@ -45,15 +45,29 @@ export interface Match {
 export interface Prediction {
   _id: string
   user: string | User
+  entry: string
   match: Match
   score1: number
   score2: number
   points: number | null
 }
 
+export interface Entry {
+  _id: string
+  user: string
+  entryNumber: number
+  paymentStatus: 'pending' | 'reported' | 'confirmed'
+  paymentNote: string | null
+  status: 'active' | 'completed'
+  completedAt: string | null
+  progress?: PredictionProgress
+}
+
 export interface LeaderboardEntry {
   rank: number
   userId: string
+  entryId: string
+  entryNumber: number
   firstName: string
   lastName: string
   email: string

@@ -55,23 +55,55 @@
               <span v-else class="text-xs text-gray-400">0%</span>
             </td>
             <td class="py-3 px-4 text-center">
-              <div v-if="player.role !== 'admin'" class="flex items-center justify-center gap-2">
-                <span :class="[
-                  'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-                  player.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-800' :
-                  player.paymentStatus === 'reported' ? 'bg-blue-100 text-blue-800' :
-                  'bg-gray-100 text-gray-600'
-                ]">
-                  {{ $t(`admin.players.payment${capitalize(player.paymentStatus || 'pending')}`) }}
-                </span>
-                <template v-if="player.paymentStatus === 'reported'">
-                  <button @click="confirmPayment(player._id)" class="text-green-600 hover:text-green-800 text-xs font-semibold">
-                    {{ $t('admin.players.confirmPayment') }}
-                  </button>
-                  <button @click="rejectPayment(player._id)" class="text-red-500 hover:text-red-700 text-xs font-semibold">
-                    {{ $t('admin.players.rejectPayment') }}
-                  </button>
-                </template>
+              <div v-if="player.role !== 'admin'" class="flex flex-col items-center justify-center gap-1">
+                <div v-if="player.latestEntry" class="flex items-center justify-center gap-2 flex-wrap">
+                  <span class="text-xs text-gray-500">#{{ player.latestEntry.entryNumber }}</span>
+                  <span :class="[
+                    'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                    player.latestEntry.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-800' :
+                    player.latestEntry.paymentStatus === 'reported' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-600'
+                  ]">
+                    {{ $t(`admin.players.payment${capitalize(player.latestEntry.paymentStatus || 'pending')}`) }}
+                  </span>
+                  <template v-if="player.latestEntry.paymentStatus === 'reported'">
+                    <button
+                      @click="confirmPayment(player._id, player.latestEntry._id)"
+                      class="text-green-600 hover:text-green-800 text-xs font-semibold"
+                    >
+                      {{ $t('admin.players.confirmPayment') }}
+                    </button>
+                    <button
+                      @click="rejectPayment(player._id, player.latestEntry._id)"
+                      class="text-red-500 hover:text-red-700 text-xs font-semibold"
+                    >
+                      {{ $t('admin.players.rejectPayment') }}
+                    </button>
+                  </template>
+                </div>
+                <button
+                  v-if="player.entries && player.entries.length > 1"
+                  @click="toggleEntries(player._id)"
+                  class="text-xs text-gray-500 underline hover:text-primary"
+                >
+                  {{ expandedPlayer === player._id ? $t('admin.players.hideHistory') : $t('admin.players.showHistory', { n: player.entries.length }) }}
+                </button>
+                <ul v-if="expandedPlayer === player._id" class="text-left text-xs text-gray-600 mt-1 space-y-1 w-full max-w-xs">
+                  <li v-for="e in player.entries" :key="e._id" class="flex justify-between gap-2">
+                    <span>#{{ e.entryNumber }}</span>
+                    <span class="text-gray-500">{{ e.progress.percentage }}%</span>
+                    <span :class="[
+                      'px-1.5 py-0.5 rounded text-[10px]',
+                      e.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-800' :
+                      e.paymentStatus === 'reported' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-600'
+                    ]">{{ $t(`admin.players.payment${capitalize(e.paymentStatus)}`) }}</span>
+                    <span :class="[
+                      'px-1.5 py-0.5 rounded text-[10px]',
+                      e.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    ]">{{ e.status }}</span>
+                  </li>
+                </ul>
               </div>
             </td>
             <td class="py-3 px-4">
@@ -121,9 +153,15 @@
 </template>
 
 <script setup lang="ts">
-import type { User, PredictionProgress } from '~/types'
+import type { User, PredictionProgress, Entry } from '~/types'
 
-type PlayerWithProgress = User & { _id: string; progress?: PredictionProgress }
+type EntrySummary = Entry & { progress: PredictionProgress }
+type PlayerWithProgress = User & {
+  _id: string
+  progress?: PredictionProgress
+  entries?: EntrySummary[]
+  latestEntry?: EntrySummary | null
+}
 
 definePageMeta({ middleware: 'admin' })
 
@@ -135,6 +173,11 @@ const loading = ref(true)
 const togglingId = ref<string | null>(null)
 const resettingId = ref<string | null>(null)
 const newPassword = ref('')
+const expandedPlayer = ref<string | null>(null)
+
+function toggleEntries(playerId: string) {
+  expandedPlayer.value = expandedPlayer.value === playerId ? null : playerId
+}
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
@@ -144,18 +187,20 @@ async function fetchPlayers() {
   players.value = await apiFetch<PlayerWithProgress[]>('/api/users')
 }
 
-async function confirmPayment(userId: string) {
+async function confirmPayment(userId: string, entryId?: string) {
   try {
-    await apiFetch(`/api/payments/${userId}/confirm`, { method: 'PATCH' })
+    const qs = entryId ? `?entryId=${entryId}` : ''
+    await apiFetch(`/api/payments/${userId}/confirm${qs}`, { method: 'PATCH' })
     await fetchPlayers()
   } catch (e: any) {
     toast.error(e?.data?.message || 'Failed')
   }
 }
 
-async function rejectPayment(userId: string) {
+async function rejectPayment(userId: string, entryId?: string) {
   try {
-    await apiFetch(`/api/payments/${userId}/reject`, { method: 'PATCH' })
+    const qs = entryId ? `?entryId=${entryId}` : ''
+    await apiFetch(`/api/payments/${userId}/reject${qs}`, { method: 'PATCH' })
     await fetchPlayers()
   } catch (e: any) {
     toast.error(e?.data?.message || 'Failed')

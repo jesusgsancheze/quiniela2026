@@ -82,7 +82,8 @@ onMounted(async () => {
   try {
     const rankings = await apiFetch<LeaderboardEntry[]>('/api/leaderboard')
     const userId = authStore.user?.id || authStore.user?._id
-    myRanking.value = rankings.find((r) => r.userId === userId) || null
+    const mine = rankings.filter((r) => r.userId === userId)
+    myRanking.value = mine[0] ?? null
   } catch {}
 })
 </script>
