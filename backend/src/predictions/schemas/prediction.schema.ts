@@ -6,6 +6,9 @@ export class Prediction extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Entry', required: true })
+  entry: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId, ref: 'Match', required: true })
   match: Types.ObjectId;
 
@@ -20,4 +23,5 @@ export class Prediction extends Document {
 }
 
 export const PredictionSchema = SchemaFactory.createForClass(Prediction);
-PredictionSchema.index({ user: 1, match: 1 }, { unique: true });
+PredictionSchema.index({ entry: 1, match: 1 }, { unique: true });
+PredictionSchema.index({ user: 1 });

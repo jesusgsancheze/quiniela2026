@@ -4,6 +4,7 @@ import { PredictionsService } from './predictions.service.js';
 import { PredictionsController } from './predictions.controller.js';
 import { Prediction, PredictionSchema } from './schemas/prediction.schema.js';
 import { MatchesModule } from '../matches/matches.module.js';
+import { EntriesModule } from '../entries/entries.module.js';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { MatchesModule } from '../matches/matches.module.js';
       { name: Prediction.name, schema: PredictionSchema },
     ]),
     forwardRef(() => MatchesModule),
+    forwardRef(() => EntriesModule),
   ],
   controllers: [PredictionsController],
   providers: [PredictionsService],

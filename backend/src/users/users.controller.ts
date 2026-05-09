@@ -28,6 +28,7 @@ const r2Client = new S3Client({
 });
 import { UsersService } from './users.service.js';
 import { PredictionsService } from '../predictions/predictions.service.js';
+import { EntriesService } from '../entries/entries.service.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { UpdateStatusDto } from './dto/update-status.dto.js';
 import { ResetPasswordDto } from './dto/reset-password.dto.js';
@@ -41,6 +42,7 @@ export class UsersController {
   constructor(
     private usersService: UsersService,
     private predictionsService: PredictionsService,
+    private entriesService: EntriesService,
   ) {}
 
   @Get('me')
@@ -100,14 +102,18 @@ export class UsersController {
   async findAll() {
     const players = await this.usersService.findAllPlayers();
     const progressMap = await this.predictionsService.getAllProgress();
+    const entriesByUser = await this.entriesService.getEntriesWithProgressByUser();
     return players.map((p) => {
       const obj = p.toObject ? p.toObject() : p;
-      const progress = progressMap[obj._id.toString()] || {
+      const userId = obj._id.toString();
+      const progress = progressMap[userId] || {
         filled: 0,
         total: 0,
         percentage: 0,
       };
-      return { ...obj, progress };
+      const entries = entriesByUser[userId] || [];
+      const latestEntry = entries[0] || null;
+      return { ...obj, progress, entries, latestEntry };
     });
   }
 

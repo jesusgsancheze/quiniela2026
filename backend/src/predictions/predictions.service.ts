@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { Model, Types } from 'mongoose';
 import { Prediction } from './schemas/prediction.schema.js';
 import { MatchesService } from '../matches/matches.service.js';
+import { EntriesService } from '../entries/entries.service.js';
 
 @Injectable()
 export class PredictionsService {
@@ -18,6 +19,8 @@ export class PredictionsService {
     @InjectModel(Prediction.name) private predictionModel: Model<Prediction>,
     @Inject(forwardRef(() => MatchesService))
     private matchesService: MatchesService,
+    @Inject(forwardRef(() => EntriesService))
+    private entriesService: EntriesService,
     private configService: ConfigService,
   ) {
     this.deadline = new Date(
@@ -40,23 +43,35 @@ export class PredictionsService {
       );
     }
 
-    return this.predictionModel
+    const activeEntry = await this.entriesService.findActiveEntry(userId);
+    const entry = this.entriesService.ensureCanPredict(activeEntry);
+
+    const prediction = (await this.predictionModel
       .findOneAndUpdate(
-        { user: userId, match: matchId },
-        { user: userId, match: matchId, score1, score2, points: null },
+        { entry: entry._id, match: matchId },
+        {
+          user: userId,
+          entry: entry._id,
+          match: matchId,
+          score1,
+          score2,
+          points: null,
+        },
         { upsert: true, new: true },
       )
-      .exec() as Promise<Prediction>;
+      .exec()) as Prediction;
+
+    await this.entriesService.maybeMarkCompleted(entry);
+
+    return prediction;
   }
 
-  async findByUser(
-    userId: string,
-    filled?: string,
-  ): Promise<Prediction[]> {
-    const query: Record<string, unknown> = { user: userId };
+  async findByUser(userId: string, _filled?: string): Promise<Prediction[]> {
+    const activeEntry = await this.entriesService.findActiveEntry(userId);
+    if (!activeEntry) return [];
 
-    const predictions = await this.predictionModel
-      .find(query)
+    return this.predictionModel
+      .find({ entry: activeEntry._id })
       .populate({
         path: 'match',
         populate: [
@@ -66,8 +81,6 @@ export class PredictionsService {
         ],
       })
       .exec();
-
-    return predictions;
   }
 
   async getProgress(userId: string): Promise<{
@@ -76,9 +89,16 @@ export class PredictionsService {
     percentage: number;
   }> {
     const total = await this.matchesService.countGroupStage();
+    const activeEntry = await this.entriesService.findActiveEntry(userId);
+    if (!activeEntry) {
+      return { filled: 0, total, percentage: 0 };
+    }
     const groupMatchIds = await this.matchesService.getGroupStageMatchIds();
     const filled = await this.predictionModel
-      .countDocuments({ user: userId, match: { $in: groupMatchIds } })
+      .countDocuments({
+        entry: activeEntry._id,
+        match: { $in: groupMatchIds },
+      })
       .exec();
     const percentage = total > 0 ? Math.round((filled / total) * 100) : 0;
     return { filled, total, percentage };
@@ -90,7 +110,6 @@ export class PredictionsService {
     const total = await this.matchesService.countGroupStage();
     const groupMatchIds = await this.matchesService.getGroupStageMatchIds();
 
-    // Use find + manual grouping instead of aggregate to avoid ObjectId casting issues
     const predictions = await this.predictionModel
       .find({ match: { $in: groupMatchIds } }, { user: 1 })
       .lean()

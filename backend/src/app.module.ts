@@ -12,6 +12,7 @@ import { PredictionsModule } from './predictions/predictions.module.js';
 import { LeaderboardModule } from './leaderboard/leaderboard.module.js';
 import { SeederModule } from './seeder/seeder.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
+import { EntriesModule } from './entries/entries.module.js';
 import { MailModule } from './mail/mail.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
@@ -37,6 +38,7 @@ import { RolesGuard } from './common/guards/roles.guard.js';
     PredictionsModule,
     LeaderboardModule,
     SeederModule,
+    EntriesModule,
     PaymentsModule,
     MailModule,
   ],

@@ -7,12 +7,14 @@ import {
   PredictionSchema,
 } from '../predictions/schemas/prediction.schema.js';
 import { User, UserSchema } from '../users/schemas/user.schema.js';
+import { Entry, EntrySchema } from '../entries/schemas/entry.schema.js';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Prediction.name, schema: PredictionSchema },
       { name: User.name, schema: UserSchema },
+      { name: Entry.name, schema: EntrySchema },
     ]),
   ],
   controllers: [LeaderboardController],

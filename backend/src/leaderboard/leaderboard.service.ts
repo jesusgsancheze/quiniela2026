@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Prediction } from '../predictions/schemas/prediction.schema.js';
 import { User } from '../users/schemas/user.schema.js';
+import { Entry } from '../entries/schemas/entry.schema.js';
 
 @Injectable()
 export class LeaderboardService {
@@ -11,14 +12,19 @@ export class LeaderboardService {
     private predictionModel: Model<Prediction>,
     @InjectModel(User.name)
     private userModel: Model<User>,
+    @InjectModel(Entry.name)
+    private entryModel: Model<Entry>,
   ) {}
 
   async getRankings() {
-    // Get all predictions grouped by user
+    // Group predictions by (user, entry) — every entry is its own row.
     const grouped = await this.predictionModel.aggregate([
       {
+        $match: { entry: { $ne: null } },
+      },
+      {
         $group: {
-          _id: '$user',
+          _id: { user: '$user', entry: '$entry' },
           totalPoints: { $sum: '$points' },
           matchesScored: {
             $sum: {
@@ -27,27 +33,34 @@ export class LeaderboardService {
           },
         },
       },
-      { $sort: { totalPoints: -1 } },
     ]);
 
     if (grouped.length === 0) return [];
 
-    // Fetch user details for all grouped users
-    const userIds = grouped.map((g) => g._id);
-    const users = await this.userModel
-      .find({ _id: { $in: userIds } }, { password: 0 })
-      .exec();
-
-    const userMap = new Map(
-      users.map((u) => [u._id.toString(), u]),
+    const userIds = Array.from(
+      new Set(grouped.map((g) => g._id.user.toString())),
     );
+    const entryIds = Array.from(
+      new Set(grouped.map((g) => g._id.entry.toString())),
+    );
+
+    const [users, entries] = await Promise.all([
+      this.userModel.find({ _id: { $in: userIds } }, { password: 0 }).exec(),
+      this.entryModel.find({ _id: { $in: entryIds } }).exec(),
+    ]);
+
+    const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+    const entryMap = new Map(entries.map((e) => [e._id.toString(), e]));
 
     const results = grouped
       .map((g) => {
-        const user = userMap.get(g._id.toString());
-        if (!user || user.role === 'admin') return null;
+        const user = userMap.get(g._id.user.toString());
+        const entry = entryMap.get(g._id.entry.toString());
+        if (!user || !entry || user.role === 'admin') return null;
         return {
-          userId: g._id.toString(),
+          userId: user._id.toString(),
+          entryId: entry._id.toString(),
+          entryNumber: entry.entryNumber,
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,

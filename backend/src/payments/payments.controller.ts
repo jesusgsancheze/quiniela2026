@@ -1,4 +1,12 @@
-import { Controller, Get, Put, Patch, Body, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { PaymentsService } from './payments.service.js';
 import { UpdatePaymentConfigDto } from './dto/update-payment-config.dto.js';
 import { ReportPaymentDto } from './dto/report-payment.dto.js';
@@ -35,13 +43,19 @@ export class PaymentsController {
 
   @Patch(':userId/confirm')
   @Roles(Role.Admin)
-  confirmPayment(@Param('userId') userId: string) {
-    return this.paymentsService.confirmPayment(userId);
+  confirmPayment(
+    @Param('userId') userId: string,
+    @Query('entryId') entryId?: string,
+  ) {
+    return this.paymentsService.confirmPayment(userId, entryId);
   }
 
   @Patch(':userId/reject')
   @Roles(Role.Admin)
-  rejectPayment(@Param('userId') userId: string) {
-    return this.paymentsService.rejectPayment(userId);
+  rejectPayment(
+    @Param('userId') userId: string,
+    @Query('entryId') entryId?: string,
+  ) {
+    return this.paymentsService.rejectPayment(userId, entryId);
   }
 }

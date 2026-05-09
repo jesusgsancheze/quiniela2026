@@ -7,6 +7,7 @@ import {
   PaymentConfigSchema,
 } from './schemas/payment-config.schema.js';
 import { User, UserSchema } from '../users/schemas/user.schema.js';
+import { EntriesModule } from '../entries/entries.module.js';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { User, UserSchema } from '../users/schemas/user.schema.js';
       { name: PaymentConfig.name, schema: PaymentConfigSchema },
       { name: User.name, schema: UserSchema },
     ]),
+    EntriesModule,
   ],
   controllers: [PaymentsController],
   providers: [PaymentsService],
