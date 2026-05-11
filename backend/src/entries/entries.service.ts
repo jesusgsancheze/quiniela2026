@@ -111,21 +111,21 @@ export class EntriesService implements OnModuleInit {
 
   async findActiveEntry(userId: string): Promise<Entry | null> {
     return this.entryModel
-      .findOne({ user: userId, status: 'active' })
+      .findOne({ user: new Types.ObjectId(userId), status: 'active' })
       .sort({ entryNumber: -1 })
       .exec();
   }
 
   async findLatestEntry(userId: string): Promise<Entry | null> {
     return this.entryModel
-      .findOne({ user: userId })
+      .findOne({ user: new Types.ObjectId(userId) })
       .sort({ entryNumber: -1 })
       .exec();
   }
 
   async findByUser(userId: string): Promise<Entry[]> {
     return this.entryModel
-      .find({ user: userId })
+      .find({ user: new Types.ObjectId(userId) })
       .sort({ entryNumber: -1 })
       .exec();
   }

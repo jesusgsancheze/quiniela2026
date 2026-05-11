@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
 import type { Entry } from '~/types'
 
+function pickActiveEntry(list: Entry[]): Entry | null {
+  const active = list.filter((e) => e.status === 'active')
+  if (active.length === 0) return null
+  return active.reduce((a, b) => (a.entryNumber > b.entryNumber ? a : b))
+}
+
 export const useEntriesStore = defineStore('entries', {
   state: () => ({
     entries: [] as Entry[],
@@ -31,12 +37,9 @@ export const useEntriesStore = defineStore('entries', {
       const { apiFetch } = useApi()
       this.loading = true
       try {
-        const [list, active] = await Promise.all([
-          apiFetch<Entry[]>('/api/entries/me'),
-          apiFetch<Entry | null>('/api/entries/me/active'),
-        ])
+        const list = await apiFetch<Entry[]>('/api/entries/me')
         this.entries = list
-        this.activeEntry = active
+        this.activeEntry = pickActiveEntry(list)
       } finally {
         this.loading = false
       }
@@ -47,17 +50,20 @@ export const useEntriesStore = defineStore('entries', {
       const created = await apiFetch<Entry>('/api/entries/new', {
         method: 'POST',
       })
-      this.activeEntry = created
       if (!this.entries.some((e) => e._id === created._id)) {
         this.entries = [created, ...this.entries]
       }
+      this.activeEntry = pickActiveEntry(this.entries) || created
       try {
         await this.fetchMine()
       } catch {
-        // Keep the optimistic activeEntry if the refresh fails.
+        // Keep the optimistic state if the refresh fails.
       }
       if (!this.activeEntry) {
         this.activeEntry = created
+        if (!this.entries.some((e) => e._id === created._id)) {
+          this.entries = [created, ...this.entries]
+        }
       }
       return created
     },
