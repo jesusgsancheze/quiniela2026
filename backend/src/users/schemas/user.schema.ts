@@ -19,7 +19,7 @@ export class User extends Document {
   @Prop({ type: String, enum: Role, default: Role.Player })
   role: Role;
 
-  @Prop({ type: String, enum: ['active', 'inactive'], default: 'inactive' })
+  @Prop({ type: String, enum: ['active', 'inactive'], default: 'active' })
   status: string;
 
   @Prop({ default: null })

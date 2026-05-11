@@ -225,7 +225,7 @@ async function createNewEntry() {
 
 onMounted(async () => {
   try {
-    await Promise.all([
+    await Promise.allSettled([
       authStore.fetchProfile(),
       entriesStore.fetchMine(),
       apiFetch<PaymentConfig>('/api/payments/config').then((c) => (config.value = c)),

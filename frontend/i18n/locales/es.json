@@ -108,7 +108,10 @@
     "player": "Jugador",
     "entry": "Quiniela",
     "matches": "Partidos",
-    "points": "Puntos"
+    "points": "Puntos",
+    "lockedTitle": "Posiciones bloqueadas",
+    "lockedDesc": "Inicia una predicción y completa el pago para desbloquear la tabla.",
+    "lockedCta": "Iniciar nueva predicción"
   },
   "standings": {
     "title": "Clasificación por Grupos",

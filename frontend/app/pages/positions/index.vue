@@ -6,6 +6,14 @@
       {{ $t('positions.loading') }}
     </div>
 
+    <div v-else-if="!hasUnlockedAccess" class="card text-center py-12">
+      <p class="text-gray-700 text-lg font-semibold">{{ $t('positions.lockedTitle') }}</p>
+      <p class="text-gray-500 text-sm mt-2 mb-4">{{ $t('positions.lockedDesc') }}</p>
+      <NuxtLink to="/predictions" class="btn-primary inline-block">
+        {{ $t('positions.lockedCta') }}
+      </NuxtLink>
+    </div>
+
     <div v-else-if="rankings.length === 0" class="card text-center py-12">
       <p class="text-gray-500 text-lg">{{ $t('positions.noResults') }}</p>
       <p class="text-gray-400 text-sm mt-2">{{ $t('positions.noResultsDesc') }}</p>
@@ -80,10 +88,16 @@ import type { LeaderboardEntry } from '~/types'
 definePageMeta({ middleware: 'auth' })
 
 const authStore = useAuthStore()
+const entriesStore = useEntriesStore()
 const { apiFetch } = useApi()
 const { avatarUrl } = useAvatar()
 const rankings = ref<LeaderboardEntry[]>([])
 const loading = ref(true)
+
+const hasUnlockedAccess = computed(() => {
+  if (authStore.isAdmin) return true
+  return entriesStore.entries.some((e) => e.paymentStatus === 'confirmed')
+})
 
 function isCurrentUser(userId: string): boolean {
   const user = authStore.user
@@ -92,7 +106,10 @@ function isCurrentUser(userId: string): boolean {
 
 onMounted(async () => {
   try {
-    rankings.value = await apiFetch<LeaderboardEntry[]>('/api/leaderboard')
+    await entriesStore.fetchMine()
+    if (hasUnlockedAccess.value) {
+      rankings.value = await apiFetch<LeaderboardEntry[]>('/api/leaderboard')
+    }
   } finally {
     loading.value = false
   }

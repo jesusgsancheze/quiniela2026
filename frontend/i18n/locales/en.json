@@ -108,7 +108,10 @@
     "player": "Player",
     "entry": "Entry",
     "matches": "Matches",
-    "points": "Points"
+    "points": "Points",
+    "lockedTitle": "Positions are locked",
+    "lockedDesc": "Start a prediction and complete its payment to unlock the leaderboard.",
+    "lockedCta": "Start a new prediction"
   },
   "standings": {
     "title": "Group Standings",

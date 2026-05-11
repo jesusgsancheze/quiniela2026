@@ -122,7 +122,6 @@ definePageMeta({ middleware: 'auth' })
 
 const { t } = useI18n()
 const toast = useToast()
-const router = useRouter()
 const authStore = useAuthStore()
 const matchesStore = useMatchesStore()
 const predictionsStore = usePredictionsStore()
@@ -191,10 +190,14 @@ async function requestNewEntry() {
   creating.value = true
   try {
     await entriesStore.createNewEntry()
-    await predictionsStore.fetchPredictions()
-    await predictionsStore.fetchProgress()
     toast.success(t('predictions.newEntryCreated'))
-    router.push('/payment')
+    await navigateTo('/payment')
+    // Refresh predictions/progress in background; failures here shouldn't
+    // block the navigation to /payment.
+    Promise.allSettled([
+      predictionsStore.fetchPredictions(),
+      predictionsStore.fetchProgress(),
+    ])
   } catch (e: any) {
     toast.error(e?.data?.message || t('predictions.newEntryFailed'))
   } finally {

@@ -47,7 +47,18 @@ export const useEntriesStore = defineStore('entries', {
       const created = await apiFetch<Entry>('/api/entries/new', {
         method: 'POST',
       })
-      await this.fetchMine()
+      this.activeEntry = created
+      if (!this.entries.some((e) => e._id === created._id)) {
+        this.entries = [created, ...this.entries]
+      }
+      try {
+        await this.fetchMine()
+      } catch {
+        // Keep the optimistic activeEntry if the refresh fails.
+      }
+      if (!this.activeEntry) {
+        this.activeEntry = created
+      }
       return created
     },
 
