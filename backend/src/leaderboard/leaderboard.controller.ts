@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { LeaderboardService } from './leaderboard.service.js';
 
 @Controller('api/leaderboard')
@@ -8,5 +8,10 @@ export class LeaderboardController {
   @Get()
   getRankings() {
     return this.leaderboardService.getRankings();
+  }
+
+  @Get('entries/:id/predictions')
+  getEntryPredictions(@Param('id') id: string) {
+    return this.leaderboardService.getEntryPredictions(id);
   }
 }

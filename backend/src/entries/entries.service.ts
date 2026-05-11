@@ -123,6 +123,21 @@ export class EntriesService implements OnModuleInit {
       .exec();
   }
 
+  /**
+   * Returns the most recent entry whose payment is confirmed. Used by the
+   * predictions endpoints so a user with an in-flight (pending) new entry can
+   * still see and edit their last paid entry until the new one is approved.
+   */
+  async findLatestConfirmedEntry(userId: string): Promise<Entry | null> {
+    return this.entryModel
+      .findOne({
+        user: new Types.ObjectId(userId),
+        paymentStatus: 'confirmed',
+      })
+      .sort({ entryNumber: -1 })
+      .exec();
+  }
+
   async findByUser(userId: string): Promise<Entry[]> {
     return this.entryModel
       .find({ user: new Types.ObjectId(userId) })
@@ -133,6 +148,21 @@ export class EntriesService implements OnModuleInit {
   async findById(id: string): Promise<Entry | null> {
     if (!Types.ObjectId.isValid(id)) return null;
     return this.entryModel.findById(id).exec();
+  }
+
+  /**
+   * Returns the entry only if it belongs to the given user, otherwise null.
+   * Used by predictions endpoints that accept an entryId from the client so
+   * we don't expose another user's entry by accident.
+   */
+  async findEntryForUser(entryId: string, userId: string): Promise<Entry | null> {
+    if (!Types.ObjectId.isValid(entryId)) return null;
+    return this.entryModel
+      .findOne({
+        _id: new Types.ObjectId(entryId),
+        user: new Types.ObjectId(userId),
+      })
+      .exec();
   }
 
   async createNewEntry(userId: string): Promise<Entry> {
@@ -213,21 +243,19 @@ export class EntriesService implements OnModuleInit {
 
   /**
    * Throws if the entry is not in a state that allows submitting predictions.
+   * 'completed' entries are still editable — that flag only gates whether the
+   * user is allowed to start an additional entry, not whether predictions can
+   * be revised before the tournament deadline.
    */
   ensureCanPredict(entry: Entry | null): Entry {
     if (!entry) {
       throw new ForbiddenException(
-        'You do not have an active entry. Request a new prediction first.',
+        'You do not have an entry yet. Request a new prediction first.',
       );
     }
     if (entry.paymentStatus !== 'confirmed') {
       throw new ForbiddenException(
         'Entry payment is not confirmed yet.',
-      );
-    }
-    if (entry.status === 'completed') {
-      throw new ForbiddenException(
-        'This entry is already complete. Request a new prediction to keep playing.',
       );
     }
     return entry;

@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Prediction } from '../predictions/schemas/prediction.schema.js';
 import { User } from '../users/schemas/user.schema.js';
 import { Entry } from '../entries/schemas/entry.schema.js';
@@ -15,6 +15,52 @@ export class LeaderboardService {
     @InjectModel(Entry.name)
     private entryModel: Model<Entry>,
   ) {}
+
+  /**
+   * Returns the predictions placed for a single entry, joined with match + user
+   * info so other players can audit it from the leaderboard.
+   */
+  async getEntryPredictions(entryId: string) {
+    if (!Types.ObjectId.isValid(entryId)) {
+      throw new NotFoundException('Entry not found');
+    }
+    const entry = await this.entryModel.findById(entryId).exec();
+    if (!entry) throw new NotFoundException('Entry not found');
+
+    const user = await this.userModel
+      .findById(entry.user, { password: 0 })
+      .exec();
+
+    const predictions = await this.predictionModel
+      .find({ entry: entry._id })
+      .populate({
+        path: 'match',
+        populate: [
+          { path: 'team1' },
+          { path: 'team2' },
+          { path: 'group' },
+        ],
+      })
+      .exec();
+
+    return {
+      entry: {
+        _id: entry._id.toString(),
+        entryNumber: entry.entryNumber,
+        status: entry.status,
+        paymentStatus: entry.paymentStatus,
+      },
+      user: user
+        ? {
+            _id: user._id.toString(),
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilePicture: user.profilePicture,
+          }
+        : null,
+      predictions,
+    };
+  }
 
   async getRankings() {
     // Group predictions by (user, entry) — every entry is its own row.

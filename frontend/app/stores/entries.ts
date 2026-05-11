@@ -20,6 +20,11 @@ export const useEntriesStore = defineStore('entries', {
       const sorted = [...state.entries].sort((a, b) => b.entryNumber - a.entryNumber)
       return sorted[0] ?? null
     },
+    latestPaidEntry(state): Entry | null {
+      const paid = state.entries.filter((e) => e.paymentStatus === 'confirmed')
+      if (paid.length === 0) return null
+      return paid.reduce((a, b) => (a.entryNumber > b.entryNumber ? a : b))
+    },
     canRequestNewEntry(): boolean {
       const latest = this.latestEntry
       return !!latest && latest.status === 'completed'

@@ -101,18 +101,20 @@ export class UsersController {
   @Roles(Role.Admin)
   async findAll() {
     const players = await this.usersService.findAllPlayers();
-    const progressMap = await this.predictionsService.getAllProgress();
     const entriesByUser = await this.entriesService.getEntriesWithProgressByUser();
     return players.map((p) => {
       const obj = p.toObject ? p.toObject() : p;
       const userId = obj._id.toString();
-      const progress = progressMap[userId] || {
+      const entries = entriesByUser[userId] || [];
+      const latestEntry = entries[0] || null;
+      // Top-line progress reflects the latest entry only. Per-entry progress
+      // is available under `entries` (rendered behind the "show history"
+      // expander on the admin players page).
+      const progress = latestEntry?.progress || {
         filled: 0,
         total: 0,
         percentage: 0,
       };
-      const entries = entriesByUser[userId] || [];
-      const latestEntry = entries[0] || null;
       return { ...obj, progress, entries, latestEntry };
     });
   }

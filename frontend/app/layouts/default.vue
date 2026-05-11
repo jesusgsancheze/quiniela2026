@@ -35,6 +35,9 @@
               <NuxtLink to="/standings" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
                 {{ $t('nav.standings') }}
               </NuxtLink>
+              <NuxtLink to="/matches" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
+                {{ $t('nav.matches') }}
+              </NuxtLink>
               <NuxtLink to="/positions" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
                 {{ $t('nav.positions') }}
               </NuxtLink>
@@ -135,6 +138,9 @@
               </template>
               <NuxtLink to="/standings" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
                 {{ $t('nav.standings') }}
+              </NuxtLink>
+              <NuxtLink to="/matches" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                {{ $t('nav.matches') }}
               </NuxtLink>
               <NuxtLink to="/positions" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
                 {{ $t('nav.positions') }}

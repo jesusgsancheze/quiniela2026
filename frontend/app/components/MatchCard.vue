@@ -171,6 +171,9 @@ watch(() => props.prediction, (pred) => {
   if (pred) {
     score1.value = pred.score1
     score2.value = pred.score2
+  } else {
+    score1.value = null
+    score2.value = null
   }
 })
 

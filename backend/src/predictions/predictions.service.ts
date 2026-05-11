@@ -36,6 +36,7 @@ export class PredictionsService {
     matchId: string,
     score1: number,
     score2: number,
+    entryId?: string,
   ): Promise<Prediction> {
     if (new Date() >= this.deadline) {
       throw new ForbiddenException(
@@ -43,8 +44,10 @@ export class PredictionsService {
       );
     }
 
-    const activeEntry = await this.entriesService.findActiveEntry(userId);
-    const entry = this.entriesService.ensureCanPredict(activeEntry);
+    const targetEntry = entryId
+      ? await this.entriesService.findEntryForUser(entryId, userId)
+      : await this.entriesService.findLatestConfirmedEntry(userId);
+    const entry = this.entriesService.ensureCanPredict(targetEntry);
 
     const prediction = (await this.predictionModel
       .findOneAndUpdate(
@@ -66,12 +69,19 @@ export class PredictionsService {
     return prediction;
   }
 
-  async findByUser(userId: string, _filled?: string): Promise<Prediction[]> {
-    const activeEntry = await this.entriesService.findActiveEntry(userId);
-    if (!activeEntry) return [];
+  async findByUser(
+    userId: string,
+    _filled?: string,
+    entryId?: string,
+  ): Promise<Prediction[]> {
+    const targetEntry = entryId
+      ? await this.entriesService.findEntryForUser(entryId, userId)
+      : (await this.entriesService.findLatestConfirmedEntry(userId)) ||
+        (await this.entriesService.findLatestEntry(userId));
+    if (!targetEntry) return [];
 
     return this.predictionModel
-      .find({ entry: activeEntry._id })
+      .find({ entry: targetEntry._id })
       .populate({
         path: 'match',
         populate: [
@@ -83,20 +93,26 @@ export class PredictionsService {
       .exec();
   }
 
-  async getProgress(userId: string): Promise<{
+  async getProgress(
+    userId: string,
+    entryId?: string,
+  ): Promise<{
     filled: number;
     total: number;
     percentage: number;
   }> {
     const total = await this.matchesService.countGroupStage();
-    const activeEntry = await this.entriesService.findActiveEntry(userId);
-    if (!activeEntry) {
+    const targetEntry = entryId
+      ? await this.entriesService.findEntryForUser(entryId, userId)
+      : (await this.entriesService.findLatestConfirmedEntry(userId)) ||
+        (await this.entriesService.findLatestEntry(userId));
+    if (!targetEntry) {
       return { filled: 0, total, percentage: 0 };
     }
     const groupMatchIds = await this.matchesService.getGroupStageMatchIds();
     const filled = await this.predictionModel
       .countDocuments({
-        entry: activeEntry._id,
+        entry: targetEntry._id,
         match: { $in: groupMatchIds },
       })
       .exec();
@@ -180,6 +196,36 @@ export class PredictionsService {
       .find({ match: matchId })
       .populate('user', '-password')
       .exec();
+  }
+
+  /**
+   * Returns every player's prediction for a match, including which entry each
+   * came from. Used by the public match-detail page for transparency.
+   */
+  async getPublicPredictionsForMatch(matchId: string) {
+    if (!Types.ObjectId.isValid(matchId)) return [];
+    const preds = await this.predictionModel
+      .find({ match: matchId })
+      .populate('user', 'firstName lastName profilePicture role')
+      .populate('entry', 'entryNumber status paymentStatus')
+      .exec();
+
+    return preds
+      .filter((p: any) => p.user && p.user.role !== 'admin' && p.entry)
+      .map((p: any) => ({
+        _id: p._id.toString(),
+        score1: p.score1,
+        score2: p.score2,
+        points: p.points,
+        entryId: p.entry?._id?.toString?.() ?? null,
+        entryNumber: p.entry?.entryNumber ?? null,
+        user: {
+          _id: p.user._id.toString(),
+          firstName: p.user.firstName,
+          lastName: p.user.lastName,
+          profilePicture: p.user.profilePicture ?? null,
+        },
+      }));
   }
 
   private getOutcome(score1: number, score2: number): string {

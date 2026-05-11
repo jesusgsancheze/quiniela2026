@@ -8,9 +8,9 @@
       <p class="text-sm">{{ $t('predictions.inactiveMessage') }}</p>
     </div>
 
-    <!-- No active entry: prompt to start a new one -->
+    <!-- No entries at all yet: prompt to start a new one -->
     <div
-      v-else-if="!entriesStore.activeEntry && !authStore.isAdmin"
+      v-else-if="!entriesStore.latestEntry && !authStore.isAdmin"
       class="card text-center py-10 mb-6"
     >
       <h2 class="text-lg font-semibold text-primary mb-2">{{ $t('predictions.noActiveTitle') }}</h2>
@@ -20,31 +20,58 @@
       </button>
     </div>
 
-    <!-- Active entry pending payment confirmation -->
-    <div
-      v-else-if="entriesStore.activeEntry && entriesStore.activeEntry.paymentStatus !== 'confirmed' && !authStore.isAdmin"
-      class="bg-blue-50 border border-blue-200 text-blue-800 px-6 py-4 rounded-xl mb-6"
-    >
-      <p class="font-semibold">
-        {{ $t('predictions.entryNumber', { n: entriesStore.activeEntry.entryNumber }) }} —
-        {{ entriesStore.activeEntry.paymentStatus === 'reported'
-            ? $t('predictions.paymentAwaitingApproval')
-            : $t('predictions.paymentRequired') }}
-      </p>
-      <p class="text-sm mt-1">{{ $t('predictions.goToPayment') }}</p>
-      <NuxtLink to="/payment" class="inline-block mt-3 text-blue-700 underline font-medium">
-        {{ $t('predictions.openPayment') }}
-      </NuxtLink>
-    </div>
+    <template v-else>
+      <!-- Pending-payment banner for the newest unpaid entry (shown alongside
+           the paid entry's matches if one exists). -->
+      <div
+        v-if="pendingEntry && !authStore.isAdmin"
+        class="bg-blue-50 border border-blue-200 text-blue-800 px-6 py-4 rounded-xl mb-6"
+      >
+        <p class="font-semibold">
+          {{ $t('predictions.entryNumber', { n: pendingEntry.entryNumber }) }} —
+          {{ pendingEntry.paymentStatus === 'reported'
+              ? $t('predictions.paymentAwaitingApproval')
+              : $t('predictions.paymentRequired') }}
+        </p>
+        <p class="text-sm mt-1">{{ $t('predictions.goToPayment') }}</p>
+        <NuxtLink to="/payment" class="inline-block mt-3 text-blue-700 underline font-medium">
+          {{ $t('predictions.openPayment') }}
+        </NuxtLink>
+      </div>
 
     <!-- Header: entry number + progress + new-entry CTA -->
-    <template v-if="entriesStore.activeEntry?.paymentStatus === 'confirmed' || authStore.isAdmin">
+    <template v-if="currentEntry || authStore.isAdmin">
+      <!-- Entry selector: only when the player has more than one paid entry -->
+      <div v-if="paidEntries.length > 1" class="card mb-4 flex items-center gap-3">
+        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">
+          {{ $t('predictions.viewingEntry') }}:
+        </label>
+        <select
+          class="input-field flex-1"
+          :value="selectedEntryId ?? ''"
+          @change="onEntryChange(($event.target as HTMLSelectElement).value)"
+        >
+          <option
+            v-for="e in paidEntries"
+            :key="e._id"
+            :value="e._id"
+          >
+            {{ $t('predictions.entryOptionLabel', {
+              n: e.entryNumber,
+              status: e.status === 'completed'
+                ? $t('predictions.entryStatusCompletedShort')
+                : $t('predictions.entryStatusActive'),
+            }) }}
+          </option>
+        </select>
+      </div>
+
       <!-- Progress bar -->
       <div v-if="predictionsStore.progress" class="card mb-6">
         <div class="flex justify-between items-center mb-2">
           <span class="text-sm font-medium text-gray-600">
-            <template v-if="entriesStore.activeEntry">
-              {{ $t('predictions.entryNumber', { n: entriesStore.activeEntry.entryNumber }) }} —
+            <template v-if="currentEntry">
+              {{ $t('predictions.entryNumber', { n: currentEntry.entryNumber }) }} —
             </template>
             {{ $t('predictions.progress') }}
           </span>
@@ -112,6 +139,7 @@
         </div>
       </div>
     </template>
+    </template>
   </div>
 </template>
 
@@ -136,12 +164,46 @@ const tabs = computed(() => [
   { value: 'unfilled', label: t('predictions.unfilled') },
 ])
 
+const pendingEntry = computed(() => entriesStore.pendingPaymentEntry)
+
+const paidEntries = computed(() =>
+  entriesStore.entries
+    .filter((e) => e.paymentStatus === 'confirmed')
+    .sort((a, b) => b.entryNumber - a.entryNumber),
+)
+
+const selectedEntryId = ref<string | null>(null)
+
+const currentEntry = computed(() => {
+  if (selectedEntryId.value) {
+    const match = paidEntries.value.find((e) => e._id === selectedEntryId.value)
+    if (match) return match
+  }
+  return entriesStore.latestPaidEntry
+})
+
+watch(
+  () => entriesStore.latestPaidEntry?._id,
+  (latestId) => {
+    if (!selectedEntryId.value && latestId) selectedEntryId.value = latestId
+  },
+  { immediate: true },
+)
+
+async function onEntryChange(entryId: string) {
+  selectedEntryId.value = entryId
+  await Promise.all([
+    predictionsStore.fetchPredictions(entryId),
+    predictionsStore.fetchProgress(entryId),
+  ])
+}
+
 const canEdit = computed(() => {
   const deadline = new Date('2026-06-11T00:00:00Z')
   if (authStore.isAdmin) return new Date() < deadline
   if (!authStore.isActive) return false
-  const e = entriesStore.activeEntry
-  if (!e || e.paymentStatus !== 'confirmed' || e.status === 'completed') return false
+  const e = currentEntry.value
+  if (!e) return false
   return new Date() < deadline
 })
 
@@ -178,8 +240,13 @@ const filteredGroupedMatches = computed(() => {
 
 async function handleSave(data: { matchId: string; score1: number; score2: number }) {
   try {
-    await predictionsStore.savePrediction(data.matchId, data.score1, data.score2)
-    // Re-fetch active entry; it may have just transitioned to "completed".
+    await predictionsStore.savePrediction(
+      data.matchId,
+      data.score1,
+      data.score2,
+      selectedEntryId.value ?? undefined,
+    )
+    // Re-fetch entries; the just-saved one may have transitioned to "completed".
     await entriesStore.fetchMine()
   } catch (e: any) {
     toast.error(e?.data?.message || t('predictions.saveFailed'))

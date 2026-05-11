@@ -4,6 +4,7 @@ import {
   Put,
   Body,
   ForbiddenException,
+  Param,
   Query,
 } from '@nestjs/common';
 import { PredictionsService } from './predictions.service.js';
@@ -21,11 +22,16 @@ export class PredictionsController {
   findMyPredictions(
     @CurrentUser() user: User,
     @Query('filled') filled?: string,
+    @Query('entryId') entryId?: string,
   ) {
     if (user.status !== 'active' && user.role !== 'admin') {
       throw new ForbiddenException('Account is not active');
     }
-    return this.predictionsService.findByUser(user._id.toString(), filled);
+    return this.predictionsService.findByUser(
+      user._id.toString(),
+      filled,
+      entryId,
+    );
   }
 
   @Put()
@@ -41,20 +47,29 @@ export class PredictionsController {
       dto.matchId,
       dto.score1,
       dto.score2,
+      dto.entryId,
     );
   }
 
   @Get('progress')
-  getProgress(@CurrentUser() user: User) {
+  getProgress(
+    @CurrentUser() user: User,
+    @Query('entryId') entryId?: string,
+  ) {
     if (user.status !== 'active' && user.role !== 'admin') {
       throw new ForbiddenException('Account is not active');
     }
-    return this.predictionsService.getProgress(user._id.toString());
+    return this.predictionsService.getProgress(user._id.toString(), entryId);
   }
 
   @Get('progress/all')
   @Roles(Role.Admin)
   getAllProgress() {
     return this.predictionsService.getAllProgress();
+  }
+
+  @Get('match/:matchId')
+  getPredictionsForMatch(@Param('matchId') matchId: string) {
+    return this.predictionsService.getPublicPredictionsForMatch(matchId);
   }
 }

@@ -19,27 +19,37 @@ export const usePredictionsStore = defineStore('predictions', {
   },
 
   actions: {
-    async fetchPredictions() {
+    async fetchPredictions(entryId?: string) {
       this.loading = true
       try {
         const { apiFetch } = useApi()
-        this.predictions = await apiFetch<Prediction[]>('/api/predictions/me')
+        const url = entryId
+          ? `/api/predictions/me?entryId=${encodeURIComponent(entryId)}`
+          : '/api/predictions/me'
+        this.predictions = await apiFetch<Prediction[]>(url)
       } finally {
         this.loading = false
       }
     },
 
-    async fetchProgress() {
+    async fetchProgress(entryId?: string) {
       const { apiFetch } = useApi()
-      this.progress =
-        await apiFetch<PredictionProgress>('/api/predictions/progress')
+      const url = entryId
+        ? `/api/predictions/progress?entryId=${encodeURIComponent(entryId)}`
+        : '/api/predictions/progress'
+      this.progress = await apiFetch<PredictionProgress>(url)
     },
 
-    async savePrediction(matchId: string, score1: number, score2: number) {
+    async savePrediction(
+      matchId: string,
+      score1: number,
+      score2: number,
+      entryId?: string,
+    ) {
       const { apiFetch } = useApi()
       const prediction = await apiFetch<Prediction>('/api/predictions', {
         method: 'PUT',
-        body: { matchId, score1, score2 },
+        body: entryId ? { matchId, score1, score2, entryId } : { matchId, score1, score2 },
       })
       const index = this.predictions.findIndex(
         (p) =>
@@ -50,7 +60,7 @@ export const usePredictionsStore = defineStore('predictions', {
       } else {
         this.predictions.push(prediction)
       }
-      await this.fetchProgress()
+      await this.fetchProgress(entryId)
       return prediction
     },
   },
