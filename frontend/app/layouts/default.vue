@@ -42,6 +42,18 @@
                 {{ $t('nav.positions') }}
               </NuxtLink>
 
+              <!-- Rules button -->
+              <button
+                @click="showRules = true"
+                class="flex items-center gap-1.5 text-gray-300 hover:text-white text-sm font-medium transition-colors"
+                :aria-label="$t('nav.rules')"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ $t('nav.rules') }}
+              </button>
+
               <!-- Language switcher -->
               <button
                 @click="toggleLocale"
@@ -145,6 +157,15 @@
               <NuxtLink to="/positions" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
                 {{ $t('nav.positions') }}
               </NuxtLink>
+              <button
+                @click="openRulesMobile"
+                class="w-full flex items-center gap-2 py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ $t('nav.rules') }}
+              </button>
 
               <div class="border-t border-primary pt-3 mt-3 space-y-1">
                 <NuxtLink to="/profile" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
@@ -183,10 +204,17 @@
 
     <!-- Footer -->
     <footer class="bg-primary-dark text-gray-400 py-4 mt-auto">
-      <div class="max-w-7xl mx-auto px-4 text-center text-sm">
-        {{ $t('app.footer') }}
+      <div class="max-w-7xl mx-auto px-4 text-center text-sm flex flex-col sm:flex-row sm:justify-center items-center gap-2">
+        <span>{{ $t('app.footer') }}</span>
+        <span class="hidden sm:inline">·</span>
+        <button @click="showRules = true" class="underline hover:text-white transition-colors">
+          {{ $t('nav.rules') }}
+        </button>
       </div>
     </footer>
+
+    <!-- Rules Modal -->
+    <RulesModal v-model="showRules" />
   </div>
 </template>
 
@@ -196,10 +224,16 @@ const authStore = useAuthStore()
 const { avatarUrl } = useAvatar()
 const showMenu = ref(false)
 const mobileOpen = ref(false)
+const showRules = ref(false)
 const menuRef = ref<HTMLElement>()
 
 function toggleLocale() {
   setLocale(locale.value === 'en' ? 'es' : 'en')
+}
+
+function openRulesMobile() {
+  mobileOpen.value = false
+  showRules.value = true
 }
 
 function handleLogout() {
