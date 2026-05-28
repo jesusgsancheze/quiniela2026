@@ -107,7 +107,6 @@
               <ul class="list-disc list-outside ml-5 space-y-1.5">
                 <li>{{ $t('rules.prizes1') }}</li>
                 <li>{{ $t('rules.prizes2') }}</li>
-                <li>{{ $t('rules.prizes3') }}</li>
                 <li>{{ $t('rules.prizes4') }}</li>
               </ul>
             </section>
