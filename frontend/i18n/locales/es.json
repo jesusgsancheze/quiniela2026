@@ -73,7 +73,9 @@
     "communityTitle": "Pronóstico de la comunidad",
     "communityEmpty": "Sin predicciones aún",
     "draw": "Empate",
-    "predictionsCount": "{count} predicciones"
+    "predictionsCount": "{count} predicciones",
+    "viewByGroup": "Por grupo",
+    "viewByDate": "Por fecha"
   },
   "auth": {
     "signIn": "Iniciar Sesión",

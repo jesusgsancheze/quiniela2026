@@ -73,7 +73,9 @@
     "communityTitle": "Community prediction",
     "communityEmpty": "No predictions yet",
     "draw": "Draw",
-    "predictionsCount": "{count} predictions"
+    "predictionsCount": "{count} predictions",
+    "viewByGroup": "By group",
+    "viewByDate": "By date"
   },
   "auth": {
     "signIn": "Sign In",

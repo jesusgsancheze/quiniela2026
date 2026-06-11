@@ -1,13 +1,33 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-primary mb-6">{{ $t('matches.title') }}</h1>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+      <h1 class="text-3xl font-bold text-primary">{{ $t('matches.title') }}</h1>
+      <div class="inline-flex self-start rounded-lg border border-gray-200 p-0.5 bg-gray-50">
+        <button
+          type="button"
+          class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors"
+          :class="viewMode === 'group' ? 'bg-primary text-white shadow-sm' : 'text-gray-500 hover:text-primary'"
+          @click="viewMode = 'group'"
+        >
+          {{ $t('matches.viewByGroup') }}
+        </button>
+        <button
+          type="button"
+          class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors"
+          :class="viewMode === 'date' ? 'bg-primary text-white shadow-sm' : 'text-gray-500 hover:text-primary'"
+          @click="viewMode = 'date'"
+        >
+          {{ $t('matches.viewByDate') }}
+        </button>
+      </div>
+    </div>
 
     <div v-if="loading" class="text-center py-12 text-gray-500">
       {{ $t('matches.loading') }}
     </div>
 
     <div v-else class="space-y-8">
-      <div v-for="(matches, label) in groupedMatches" :key="label">
+      <div v-for="(matches, label) in displayGroups" :key="label">
         <h2 class="text-lg font-semibold text-primary-dark mb-3 border-b-2 border-accent pb-2">
           {{ label }}
         </h2>
@@ -104,6 +124,7 @@ definePageMeta({ middleware: 'auth' })
 const { t } = useI18n()
 const matchesStore = useMatchesStore()
 const loading = ref(true)
+const viewMode = ref<'group' | 'date'>('group')
 
 const stageLabels: Record<string, string> = {
   group: t('matches.stageGroup'),
@@ -136,6 +157,27 @@ const groupedMatches = computed(() => {
   }
   return result
 })
+
+const matchesByDate = computed(() => {
+  const result: Record<string, Match[]> = {}
+  const sorted = [...matchesStore.matches].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  )
+  for (const m of sorted) {
+    const key = new Date(m.date).toLocaleDateString(undefined, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    })
+    if (!result[key]) result[key] = []
+    result[key].push(m)
+  }
+  return result
+})
+
+const displayGroups = computed(() =>
+  viewMode.value === 'date' ? matchesByDate.value : groupedMatches.value,
+)
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr)
