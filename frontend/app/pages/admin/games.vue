@@ -56,12 +56,16 @@
             <input type="number" v-model.number="editScore2" min="0" class="w-14 h-12 text-center text-lg font-bold border-2 border-accent rounded-lg" />
           </template>
           <template v-else>
-            <span class="w-10 h-10 flex items-center justify-center text-lg font-bold rounded-lg" :class="match.status === 'finished' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'">
+            <span class="w-10 h-10 flex items-center justify-center text-lg font-bold rounded-lg" :class="scoreClass(match)">
               {{ match.score1 ?? '-' }}
             </span>
             <span class="text-gray-400 font-bold">-</span>
-            <span class="w-10 h-10 flex items-center justify-center text-lg font-bold rounded-lg" :class="match.status === 'finished' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'">
+            <span class="w-10 h-10 flex items-center justify-center text-lg font-bold rounded-lg" :class="scoreClass(match)">
               {{ match.score2 ?? '-' }}
+            </span>
+            <span v-if="match.live" class="text-[10px] uppercase font-semibold text-amber-600 flex items-center gap-1 ml-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+              {{ $t('matches.live') }}
             </span>
           </template>
         </div>
@@ -73,8 +77,11 @@
 
         <div class="flex gap-2">
           <template v-if="editingMatch === match._id">
-            <button @click="saveResult(match._id)" :disabled="saving" class="btn-accent text-sm px-3 py-1">
-              {{ saving ? '...' : $t('admin.games.confirm') }}
+            <button @click="saveResult(match._id, true)" :disabled="saving" class="text-sm px-3 py-1 rounded-lg font-semibold border-2 border-amber-300 text-amber-700 hover:bg-amber-50 disabled:opacity-50">
+              {{ saving ? '...' : $t('admin.games.saveInProgress') }}
+            </button>
+            <button @click="saveResult(match._id, false)" :disabled="saving" class="btn-accent text-sm px-3 py-1">
+              {{ saving ? '...' : $t('admin.games.saveFinal') }}
             </button>
             <button @click="cancelEdit" class="btn-outline text-sm px-3 py-1">{{ $t('admin.games.cancel') }}</button>
           </template>
@@ -149,12 +156,18 @@ async function clearResult(matchId: string) {
   }
 }
 
-async function saveResult(matchId: string) {
+function scoreClass(match: Match): string {
+  if (match.live) return 'bg-amber-100 text-amber-700'
+  if (match.status === 'finished') return 'bg-green-100 text-green-800'
+  return 'bg-gray-100 text-gray-500'
+}
+
+async function saveResult(matchId: string, live: boolean) {
   saving.value = true
   try {
     await apiFetch(`/api/matches/${matchId}/result`, {
       method: 'PATCH',
-      body: { score1: editScore1.value, score2: editScore2.value },
+      body: { score1: editScore1.value, score2: editScore2.value, live },
     })
     editingMatch.value = null
     await matchesStore.fetchMatches()

@@ -43,11 +43,12 @@ export class MatchesService {
     matchId: string,
     score1: number,
     score2: number,
+    live = false,
   ): Promise<Match> {
     const match = await this.matchModel
       .findByIdAndUpdate(
         matchId,
-        { score1, score2, status: 'finished' },
+        { score1, score2, status: 'finished', live },
         { new: true },
       )
       .populate('team1')
@@ -73,7 +74,7 @@ export class MatchesService {
     const match = await this.matchModel
       .findByIdAndUpdate(
         matchId,
-        { score1: null, score2: null, status: 'scheduled' },
+        { score1: null, score2: null, status: 'scheduled', live: false },
         { new: true },
       )
       .populate('team1')

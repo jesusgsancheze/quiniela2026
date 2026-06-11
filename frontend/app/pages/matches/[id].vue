@@ -28,7 +28,14 @@
 
         <div class="flex flex-col items-center min-w-[120px]">
           <template v-if="match.status === 'finished'">
-            <p class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">{{ $t('matches.result') }}</p>
+            <p
+              v-if="match.live"
+              class="text-[10px] uppercase tracking-wider text-amber-600 font-semibold flex items-center gap-1"
+            >
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+              {{ $t('matches.live') }}
+            </p>
+            <p v-else class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">{{ $t('matches.result') }}</p>
             <div class="flex items-center gap-2 mt-1">
               <span class="w-12 h-12 flex items-center justify-center text-2xl font-bold bg-primary-dark text-white rounded-lg">
                 {{ match.score1 }}

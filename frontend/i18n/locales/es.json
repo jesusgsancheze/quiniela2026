@@ -75,7 +75,8 @@
     "draw": "Empate",
     "predictionsCount": "{count} predicciones",
     "viewByGroup": "Por grupo",
-    "viewByDate": "Por fecha"
+    "viewByDate": "Por fecha",
+    "live": "En vivo"
   },
   "auth": {
     "signIn": "Iniciar Sesión",
@@ -209,7 +210,9 @@
       "clearAll": "Borrar Todos los Resultados",
       "clearAllConfirm": "¿Borrar TODOS los resultados y recalcular puntos? Esta acción no se puede deshacer.",
       "clearAllSuccess": "{count} resultados borrados",
-      "clearAllFailed": "Error al borrar resultados"
+      "clearAllFailed": "Error al borrar resultados",
+      "saveInProgress": "En vivo",
+      "saveFinal": "Final"
     },
     "players": {
       "title": "Administrar Jugadores",

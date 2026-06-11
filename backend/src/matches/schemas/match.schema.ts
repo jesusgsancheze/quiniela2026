@@ -44,6 +44,12 @@ export class Match extends Document {
 
   @Prop({ enum: ['scheduled', 'finished'], default: 'scheduled' })
   status: string;
+
+  // Visual-only flag: true when a result is entered while the match is still
+  // being played, so the UI shows "In progress" instead of "Final". The match
+  // still counts as finished for points, standings and prediction locking.
+  @Prop({ default: false })
+  live: boolean;
 }
 
 export const MatchSchema = SchemaFactory.createForClass(Match);

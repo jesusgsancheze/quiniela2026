@@ -75,7 +75,8 @@
     "draw": "Draw",
     "predictionsCount": "{count} predictions",
     "viewByGroup": "By group",
-    "viewByDate": "By date"
+    "viewByDate": "By date",
+    "live": "Live"
   },
   "auth": {
     "signIn": "Sign In",
@@ -209,7 +210,9 @@
       "clearAll": "Clear All Results",
       "clearAllConfirm": "Clear ALL match results and recalculate points? This cannot be undone.",
       "clearAllSuccess": "Cleared {count} results",
-      "clearAllFailed": "Failed to clear results"
+      "clearAllFailed": "Failed to clear results",
+      "saveInProgress": "Live",
+      "saveFinal": "Final"
     },
     "players": {
       "title": "Manage Players",

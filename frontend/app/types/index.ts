@@ -40,6 +40,7 @@ export interface Match {
   score1: number | null
   score2: number | null
   status: 'scheduled' | 'finished'
+  live?: boolean
 }
 
 export interface Prediction {

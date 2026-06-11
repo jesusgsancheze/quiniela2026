@@ -36,6 +36,7 @@ export class MatchesController {
       id,
       updateResultDto.score1,
       updateResultDto.score2,
+      updateResultDto.live ?? false,
     );
     await this.predictionsService.calculatePoints(
       match._id.toString(),

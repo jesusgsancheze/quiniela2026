@@ -62,7 +62,14 @@
                     {{ match.score2 }}
                   </span>
                 </div>
-                <span class="text-[10px] uppercase text-green-600 font-semibold mt-0.5">
+                <span
+                  v-if="match.live"
+                  class="text-[10px] uppercase text-amber-600 font-semibold mt-0.5 flex items-center gap-1"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                  {{ $t('matches.live') }}
+                </span>
+                <span v-else class="text-[10px] uppercase text-green-600 font-semibold mt-0.5">
                   {{ $t('matches.finished') }}
                 </span>
               </template>
