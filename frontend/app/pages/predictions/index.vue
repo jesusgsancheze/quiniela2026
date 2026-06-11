@@ -199,7 +199,7 @@ async function onEntryChange(entryId: string) {
 }
 
 const canEdit = computed(() => {
-  const deadline = new Date('2026-06-11T00:00:00Z')
+  const deadline = new Date(useRuntimeConfig().public.predictionsDeadline as string)
   if (authStore.isAdmin) return new Date() < deadline
   if (!authStore.isActive) return false
   const e = currentEntry.value
