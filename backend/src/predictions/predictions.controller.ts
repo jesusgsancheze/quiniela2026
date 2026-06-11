@@ -6,7 +6,9 @@ import {
   ForbiddenException,
   Param,
   Query,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { PredictionsService } from './predictions.service.js';
 import { UpsertPredictionDto } from './dto/upsert-prediction.dto.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
@@ -71,6 +73,20 @@ export class PredictionsController {
   @Get('stats')
   getPredictionStats() {
     return this.predictionsService.getPredictionStats();
+  }
+
+  @Get('export')
+  @Roles(Role.Admin)
+  async exportPredictions(@Res() res: Response) {
+    const csv = await this.predictionsService.exportPredictionsCsv();
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="predictions-${stamp}.csv"`,
+    );
+    // Prepend a UTF-8 BOM so Excel opens accented names correctly.
+    res.send('\uFEFF' + csv);
   }
 
   @Get('match/:matchId')

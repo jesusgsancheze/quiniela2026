@@ -282,6 +282,94 @@ export class PredictionsService {
     return map;
   }
 
+  /**
+   * Full snapshot of every prediction as CSV, for admin audit / corroboration
+   * after the deadline locks. Includes player, entry, match and timestamps so
+   * the admin can verify nothing changed.
+   */
+  async exportPredictionsCsv(): Promise<string> {
+    const preds = await this.predictionModel
+      .find()
+      .populate('user', 'firstName lastName email role')
+      .populate('entry', 'entryNumber status paymentStatus')
+      .populate({
+        path: 'match',
+        populate: [{ path: 'team1' }, { path: 'team2' }, { path: 'group' }],
+      })
+      .sort({ entry: 1, match: 1 })
+      .lean()
+      .exec();
+
+    const headers = [
+      'predictionId',
+      'entryNumber',
+      'entryStatus',
+      'paymentStatus',
+      'playerFirstName',
+      'playerLastName',
+      'playerEmail',
+      'userRole',
+      'matchNumber',
+      'stage',
+      'round',
+      'group',
+      'team1',
+      'team2',
+      'predictedScore1',
+      'predictedScore2',
+      'predictedOutcome',
+      'points',
+      'matchStatus',
+      'actualScore1',
+      'actualScore2',
+      'createdAt',
+      'updatedAt',
+    ];
+
+    const teamName = (team: any, placeholder: any) =>
+      team?.name ?? placeholder ?? '';
+
+    const rows = preds.map((p: any) => {
+      const u = p.user ?? {};
+      const e = p.entry ?? {};
+      const m = p.match ?? {};
+      return [
+        p._id?.toString() ?? '',
+        e.entryNumber ?? '',
+        e.status ?? '',
+        e.paymentStatus ?? '',
+        u.firstName ?? '',
+        u.lastName ?? '',
+        u.email ?? '',
+        u.role ?? '',
+        m.matchNumber ?? '',
+        m.stage ?? '',
+        m.round ?? '',
+        m.group?.name ?? '',
+        teamName(m.team1, m.team1Placeholder),
+        teamName(m.team2, m.team2Placeholder),
+        p.score1 ?? '',
+        p.score2 ?? '',
+        this.getOutcome(p.score1, p.score2),
+        p.points ?? '',
+        m.status ?? '',
+        m.score1 ?? '',
+        m.score2 ?? '',
+        p.createdAt ? new Date(p.createdAt).toISOString() : '',
+        p.updatedAt ? new Date(p.updatedAt).toISOString() : '',
+      ];
+    });
+
+    const escape = (value: unknown): string => {
+      const s = value === null || value === undefined ? '' : String(value);
+      return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+
+    return [headers, ...rows]
+      .map((row) => row.map(escape).join(','))
+      .join('\r\n');
+  }
+
   private getOutcome(score1: number, score2: number): string {
     if (score1 > score2) return 'team1';
     if (score1 < score2) return 'team2';

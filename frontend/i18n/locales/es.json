@@ -235,7 +235,10 @@
       "confirmPayment": "Confirmar",
       "rejectPayment": "Rechazar",
       "showHistory": "Ver historial ({n})",
-      "hideHistory": "Ocultar historial"
+      "hideHistory": "Ocultar historial",
+      "exportPredictions": "Descargar predicciones (CSV)",
+      "exporting": "Descargando...",
+      "exportFailed": "No se pudo exportar"
     },
     "payments": {
       "title": "Configuración de Pagos",

@@ -1,6 +1,15 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-primary mb-6">{{ $t('admin.players.title') }}</h1>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+      <h1 class="text-3xl font-bold text-primary">{{ $t('admin.players.title') }}</h1>
+      <button
+        @click="downloadPredictions"
+        :disabled="exporting"
+        class="btn-secondary text-sm px-4 py-2 disabled:opacity-50 self-start"
+      >
+        {{ exporting ? $t('admin.players.exporting') : $t('admin.players.exportPredictions') }}
+      </button>
+    </div>
 
     <div v-if="loading" class="text-center py-12 text-gray-500">{{ $t('admin.players.loading') }}</div>
 
@@ -168,8 +177,39 @@ definePageMeta({ middleware: 'admin' })
 const { t } = useI18n()
 const toast = useToast()
 const { apiFetch } = useApi()
+const config = useRuntimeConfig()
+const authStore = useAuthStore()
 const players = ref<PlayerWithProgress[]>([])
 const loading = ref(true)
+const exporting = ref(false)
+
+async function downloadPredictions() {
+  exporting.value = true
+  try {
+    const blob = await $fetch<Blob>(
+      `${config.public.apiBase}/api/predictions/export`,
+      {
+        headers: authStore.token
+          ? { Authorization: `Bearer ${authStore.token}` }
+          : {},
+        responseType: 'blob',
+      },
+    )
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+    a.download = `predictions-${stamp}.csv`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  } catch (e: any) {
+    toast.error(e?.data?.message || t('admin.players.exportFailed'))
+  } finally {
+    exporting.value = false
+  }
+}
 const togglingId = ref<string | null>(null)
 const resettingId = ref<string | null>(null)
 const newPassword = ref('')
