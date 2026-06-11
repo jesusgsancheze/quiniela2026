@@ -68,6 +68,11 @@ export class PredictionsController {
     return this.predictionsService.getAllProgress();
   }
 
+  @Get('stats')
+  getPredictionStats() {
+    return this.predictionsService.getPredictionStats();
+  }
+
   @Get('match/:matchId')
   getPredictionsForMatch(@Param('matchId') matchId: string) {
     return this.predictionsService.getPublicPredictionsForMatch(matchId);

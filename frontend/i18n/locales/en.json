@@ -69,7 +69,11 @@
     "stageQuarter": "Quarter-finals",
     "stageSemi": "Semi-finals",
     "stageFinal": "Final",
-    "stageThird": "Third place"
+    "stageThird": "Third place",
+    "communityTitle": "Community prediction",
+    "communityEmpty": "No predictions yet",
+    "draw": "Draw",
+    "predictionsCount": "{count} predictions"
   },
   "auth": {
     "signIn": "Sign In",

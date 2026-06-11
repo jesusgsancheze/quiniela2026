@@ -228,6 +228,60 @@ export class PredictionsService {
       }));
   }
 
+  /**
+   * Aggregates how the community predicted each match: how many players picked
+   * team1 to win, a draw, or team2 to win. Admin predictions are excluded.
+   * Returns a map keyed by matchId. Used for the community sentiment bars.
+   */
+  async getPredictionStats(): Promise<
+    Record<
+      string,
+      { team1: number; draw: number; team2: number; total: number }
+    >
+  > {
+    const rows = await this.predictionModel.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'u',
+        },
+      },
+      { $unwind: '$u' },
+      { $match: { 'u.role': { $ne: 'admin' } } },
+      {
+        $group: {
+          _id: '$match',
+          team1: {
+            $sum: { $cond: [{ $gt: ['$score1', '$score2'] }, 1, 0] },
+          },
+          draw: {
+            $sum: { $cond: [{ $eq: ['$score1', '$score2'] }, 1, 0] },
+          },
+          team2: {
+            $sum: { $cond: [{ $lt: ['$score1', '$score2'] }, 1, 0] },
+          },
+          total: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const map: Record<
+      string,
+      { team1: number; draw: number; team2: number; total: number }
+    > = {};
+    for (const r of rows) {
+      map[r._id.toString()] = {
+        team1: r.team1,
+        draw: r.draw,
+        team2: r.team2,
+        total: r.total,
+      };
+    }
+    return map;
+  }
+
   private getOutcome(score1: number, score2: number): string {
     if (score1 > score2) return 'team1';
     if (score1 < score2) return 'team2';

@@ -16,8 +16,9 @@
             v-for="match in matches"
             :key="match._id"
             :to="`/matches/${match._id}`"
-            class="card flex items-center gap-3 hover:bg-gray-50 transition-colors"
+            class="card block hover:bg-gray-50 transition-colors"
           >
+            <div class="flex items-center gap-3">
             <div class="flex-1 flex items-center justify-end gap-2 min-w-0">
               <span class="font-medium text-primary truncate text-right">
                 {{ match.team1?.name || match.team1Placeholder || 'TBD' }}
@@ -68,6 +69,25 @@
             <div class="hidden sm:flex flex-col items-end text-xs text-gray-400 ml-2">
               <span>{{ formatDate(match.date) }}</span>
               <span v-if="match.venue" class="truncate max-w-[140px]">{{ match.venue }}</span>
+            </div>
+            </div>
+
+            <div class="mt-2 pt-2 border-t border-gray-100">
+              <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">
+                {{ $t('matches.communityTitle') }}
+                <span v-if="statFor(match._id).total" class="normal-case tracking-normal">
+                  · {{ $t('matches.predictionsCount', { count: statFor(match._id).total }) }}
+                </span>
+              </p>
+              <PredictionSentimentBar
+                :team1="statFor(match._id).team1"
+                :draw="statFor(match._id).draw"
+                :team2="statFor(match._id).team2"
+                :team1-label="teamLabel(match, 1)"
+                :team2-label="teamLabel(match, 2)"
+                :draw-label="$t('matches.draw')"
+                :empty-label="$t('matches.communityEmpty')"
+              />
             </div>
           </NuxtLink>
         </div>
@@ -127,9 +147,23 @@ function formatDate(dateStr: string): string {
   })
 }
 
+const emptyStat = { team1: 0, draw: 0, team2: 0, total: 0 }
+function statFor(matchId: string) {
+  return matchesStore.predictionStats[matchId] || emptyStat
+}
+
+function teamLabel(match: Match, which: 1 | 2): string {
+  const team = which === 1 ? match.team1 : match.team2
+  const placeholder = which === 1 ? match.team1Placeholder : match.team2Placeholder
+  return team?.code || team?.name || placeholder || (which === 1 ? 'T1' : 'T2')
+}
+
 onMounted(async () => {
   try {
-    await matchesStore.fetchMatches()
+    await Promise.all([
+      matchesStore.fetchMatches(),
+      matchesStore.fetchPredictionStats(),
+    ])
   } finally {
     loading.value = false
   }

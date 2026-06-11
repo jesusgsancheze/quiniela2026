@@ -1,9 +1,17 @@
 import { defineStore } from 'pinia'
 import type { Match } from '~/types'
 
+export interface MatchPredictionStat {
+  team1: number
+  draw: number
+  team2: number
+  total: number
+}
+
 export const useMatchesStore = defineStore('matches', {
   state: () => ({
     matches: [] as Match[],
+    predictionStats: {} as Record<string, MatchPredictionStat>,
     loading: false,
   }),
 
@@ -45,6 +53,13 @@ export const useMatchesStore = defineStore('matches', {
       } finally {
         this.loading = false
       }
+    },
+
+    async fetchPredictionStats() {
+      const { apiFetch } = useApi()
+      this.predictionStats = await apiFetch<
+        Record<string, MatchPredictionStat>
+      >('/api/predictions/stats')
     },
   },
 })

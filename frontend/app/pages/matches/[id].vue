@@ -67,6 +67,27 @@
         <template v-if="match.group"> · {{ match.group.name }}</template>
       </div>
 
+      <!-- Community sentiment -->
+      <div class="card mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-semibold text-primary">
+            {{ $t('matches.communityTitle') }}
+          </h2>
+          <span v-if="sentiment.total" class="text-xs text-gray-400">
+            {{ $t('matches.predictionsCount', { count: sentiment.total }) }}
+          </span>
+        </div>
+        <PredictionSentimentBar
+          :team1="sentiment.team1"
+          :draw="sentiment.draw"
+          :team2="sentiment.team2"
+          :team1-label="teamLabel(1)"
+          :team2-label="teamLabel(2)"
+          :draw-label="$t('matches.draw')"
+          :empty-label="$t('matches.communityEmpty')"
+        />
+      </div>
+
       <!-- Predictions table -->
       <div class="card">
         <h2 class="text-lg font-semibold text-primary mb-4">
@@ -158,6 +179,25 @@ const { avatarUrl } = useAvatar()
 const match = ref<Match | null>(null)
 const predictions = ref<MatchPrediction[]>([])
 const loading = ref(true)
+
+const sentiment = computed(() => {
+  const s = { team1: 0, draw: 0, team2: 0, total: 0 }
+  for (const p of predictions.value) {
+    if (p.score1 > p.score2) s.team1++
+    else if (p.score1 < p.score2) s.team2++
+    else s.draw++
+    s.total++
+  }
+  return s
+})
+
+function teamLabel(which: 1 | 2): string {
+  const m = match.value
+  if (!m) return which === 1 ? 'T1' : 'T2'
+  const team = which === 1 ? m.team1 : m.team2
+  const placeholder = which === 1 ? m.team1Placeholder : m.team2Placeholder
+  return team?.code || team?.name || placeholder || (which === 1 ? 'T1' : 'T2')
+}
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr)
