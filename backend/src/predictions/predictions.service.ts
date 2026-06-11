@@ -239,46 +239,33 @@ export class PredictionsService {
       { team1: number; draw: number; team2: number; total: number }
     >
   > {
-    const rows = await this.predictionModel.aggregate([
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'user',
-          foreignField: '_id',
-          as: 'u',
-        },
-      },
-      { $unwind: '$u' },
-      { $match: { 'u.role': { $ne: 'admin' } } },
-      {
-        $group: {
-          _id: '$match',
-          team1: {
-            $sum: { $cond: [{ $gt: ['$score1', '$score2'] }, 1, 0] },
-          },
-          draw: {
-            $sum: { $cond: [{ $eq: ['$score1', '$score2'] }, 1, 0] },
-          },
-          team2: {
-            $sum: { $cond: [{ $lt: ['$score1', '$score2'] }, 1, 0] },
-          },
-          total: { $sum: 1 },
-        },
-      },
-    ]);
+    // Uses the same populate + filter path as getPublicPredictionsForMatch so
+    // the list-page bars can never disagree with the match-detail bars.
+    const preds = await this.predictionModel
+      .find({}, { match: 1, score1: 1, score2: 1, user: 1, entry: 1 })
+      .populate('user', 'role')
+      .populate('entry', '_id')
+      .lean()
+      .exec();
 
     const map: Record<
       string,
       { team1: number; draw: number; team2: number; total: number }
     > = {};
-    for (const r of rows) {
-      map[r._id.toString()] = {
-        team1: r.team1,
-        draw: r.draw,
-        team2: r.team2,
-        total: r.total,
-      };
+
+    for (const p of preds as any[]) {
+      if (!p.user || p.user.role === 'admin' || !p.entry) continue;
+      const key = p.match?.toString();
+      if (!key) continue;
+      if (!map[key]) {
+        map[key] = { team1: 0, draw: 0, team2: 0, total: 0 };
+      }
+      if (p.score1 > p.score2) map[key].team1++;
+      else if (p.score1 < p.score2) map[key].team2++;
+      else map[key].draw++;
+      map[key].total++;
     }
+
     return map;
   }
 
