@@ -1,10 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Match } from '../matches/schemas/match.schema.js';
 import { Team } from '../teams/schemas/team.schema.js';
+import { LiveSyncStatusDoc } from './schemas/live-sync-status.schema.js';
 import { MatchesService } from '../matches/matches.service.js';
 import { PredictionsService } from '../predictions/predictions.service.js';
 import { FootballDataProvider, ProviderMatch } from './football-data.provider.js';
@@ -52,7 +53,7 @@ export interface LiveSyncStatus {
 }
 
 @Injectable()
-export class LiveResultsService {
+export class LiveResultsService implements OnModuleInit {
   private readonly logger = new Logger(LiveResultsService.name);
   private syncing = false;
 
@@ -83,7 +84,54 @@ export class LiveResultsService {
     private readonly predictionsService: PredictionsService,
     @InjectModel(Match.name) private readonly matchModel: Model<Match>,
     @InjectModel(Team.name) private readonly teamModel: Model<Team>,
+    @InjectModel(LiveSyncStatusDoc.name)
+    private readonly statusModel: Model<LiveSyncStatusDoc>,
   ) {}
+
+  /** Restore the last persisted snapshot so the dashboard survives restarts. */
+  async onModuleInit(): Promise<void> {
+    try {
+      const doc = await this.statusModel
+        .findOne({ key: 'singleton' })
+        .lean()
+        .exec();
+      if (doc) {
+        this.status = {
+          checkedAt: doc.checkedAt ?? null,
+          polledAt: doc.polledAt ?? null,
+          enabled: false,
+          inWindow: doc.inWindow ?? false,
+          updated: doc.updated ?? 0,
+          unmatchedFixtures: doc.unmatchedFixtures ?? 0,
+          unmatchedTeams: doc.unmatchedTeams ?? [],
+          fixtures: (doc.fixtures as unknown as ReadFixture[]) ?? [],
+          error: doc.error ?? null,
+        };
+      }
+    } catch (err) {
+      this.logger.warn(
+        `Could not load persisted live status: ${(err as Error).message}`,
+      );
+    }
+  }
+
+  /** Upsert the in-memory snapshot to MongoDB (best-effort, never throws). */
+  private async persistStatus(): Promise<void> {
+    try {
+      const { enabled: _enabled, ...persistable } = this.status;
+      await this.statusModel
+        .updateOne(
+          { key: 'singleton' },
+          { $set: { ...persistable, key: 'singleton' } },
+          { upsert: true },
+        )
+        .exec();
+    } catch (err) {
+      this.logger.warn(
+        `Could not persist live status: ${(err as Error).message}`,
+      );
+    }
+  }
 
   private get enabled(): boolean {
     return (
@@ -115,6 +163,7 @@ export class LiveResultsService {
             : 'LIVE_RESULTS_ENABLED is not "true"';
         this.logger.log(`Heartbeat: cron alive, sync disabled (${reason}).`);
       }
+      await this.persistStatus();
       return;
     }
 
@@ -141,6 +190,7 @@ export class LiveResultsService {
       this.status.error = (err as Error).message;
       this.logger.error(`Live sync failed: ${(err as Error).message}`);
     }
+    await this.persistStatus();
   }
 
   /**
@@ -158,6 +208,7 @@ export class LiveResultsService {
     try {
       if (!force && !(await this.hasActiveWindow())) {
         this.status.inWindow = false;
+        await this.persistStatus();
         return { polled: false, updated: 0, unmatchedTeams: [], unmatchedFixtures: 0 };
       }
       this.status.inWindow = true;
@@ -235,6 +286,7 @@ export class LiveResultsService {
       this.status.unmatchedFixtures = unmatchedFixtures;
       this.status.unmatchedTeams = dedupedTeams;
       this.status.fixtures = read;
+      await this.persistStatus();
 
       return { polled: true, updated, unmatchedTeams, unmatchedFixtures };
     } finally {
