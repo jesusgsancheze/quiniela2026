@@ -22,10 +22,59 @@ export interface SyncSummary {
   unmatchedFixtures: number;
 }
 
+/** A single fixture as seen by the provider on the last poll. */
+export interface ReadFixture {
+  home: string;
+  away: string;
+  score: string;
+  status: string;
+  matched: boolean;
+  changed: boolean;
+}
+
+/** Snapshot of the live-results worker, surfaced to admins in the UI. */
+export interface LiveSyncStatus {
+  /** Last time the cron fired at all (proves the worker is alive). */
+  checkedAt: string | null;
+  /** Last time we actually called the provider API. */
+  polledAt: string | null;
+  enabled: boolean;
+  /** Whether a fixture was inside its live window on the last check. */
+  inWindow: boolean;
+  /** Matches written to the DB on the last poll. */
+  updated: number;
+  unmatchedFixtures: number;
+  unmatchedTeams: string[];
+  /** What the provider reported for started fixtures on the last poll. */
+  fixtures: ReadFixture[];
+  /** Error message from the last failed run, if any. */
+  error: string | null;
+}
+
 @Injectable()
 export class LiveResultsService {
   private readonly logger = new Logger(LiveResultsService.name);
   private syncing = false;
+
+  private status: LiveSyncStatus = {
+    checkedAt: null,
+    polledAt: null,
+    enabled: false,
+    inWindow: false,
+    updated: 0,
+    unmatchedFixtures: 0,
+    unmatchedTeams: [],
+    fixtures: [],
+    error: null,
+  };
+
+  /** Current worker status for the admin dashboard. */
+  getStatus(): LiveSyncStatus {
+    return {
+      ...this.status,
+      enabled: this.enabled,
+    };
+  }
 
   constructor(
     private readonly config: ConfigService,
@@ -54,7 +103,11 @@ export class LiveResultsService {
     // tick is a no-op. Set LIVE_RESULTS_HEARTBEAT=false to silence once happy.
     const heartbeat = this.config.get<string>('LIVE_RESULTS_HEARTBEAT') !== 'false';
 
+    // Record every tick so the dashboard can prove the worker is alive.
+    this.status.checkedAt = new Date().toISOString();
+
     if (!this.enabled) {
+      this.status.inWindow = false;
       if (heartbeat) {
         const reason =
           this.config.get<string>('LIVE_RESULTS_ENABLED') === 'true'
@@ -67,6 +120,7 @@ export class LiveResultsService {
 
     try {
       const summary = await this.sync();
+      this.status.error = null;
       if (heartbeat) {
         this.logger.log(
           summary.polled
@@ -84,6 +138,7 @@ export class LiveResultsService {
         );
       }
     } catch (err) {
+      this.status.error = (err as Error).message;
       this.logger.error(`Live sync failed: ${(err as Error).message}`);
     }
   }
@@ -97,10 +152,15 @@ export class LiveResultsService {
       return { polled: false, updated: 0, unmatchedTeams: [], unmatchedFixtures: 0 };
     }
     this.syncing = true;
+    // When LIVE_RESULTS_DEBUG=true, log what the provider reports for each
+    // started fixture vs. what we have stored — reveals provider data lag.
+    const debug = this.config.get<string>('LIVE_RESULTS_DEBUG') === 'true';
     try {
       if (!force && !(await this.hasActiveWindow())) {
+        this.status.inWindow = false;
         return { polled: false, updated: 0, unmatchedTeams: [], unmatchedFixtures: 0 };
       }
+      this.status.inWindow = true;
 
       const providerMatches = await this.provider.fetchMatches();
       const { nameToCode, knownCodes } = await this.buildTeamMaps();
@@ -109,10 +169,23 @@ export class LiveResultsService {
       let updated = 0;
       let unmatchedFixtures = 0;
       const unmatchedTeams: string[] = [];
+      const read: ReadFixture[] = [];
 
       for (const pm of providerMatches) {
         // Only act on matches that have started.
         if (!['IN_PLAY', 'PAUSED', 'FINISHED'].includes(pm.status)) continue;
+
+        const homeScore = pm.score.fullTime.home ?? 0;
+        const awayScore = pm.score.fullTime.away ?? 0;
+        const entry: ReadFixture = {
+          home: pm.homeTeam.name ?? '??',
+          away: pm.awayTeam.name ?? '??',
+          score: `${homeScore}-${awayScore}`,
+          status: pm.status,
+          matched: false,
+          changed: false,
+        };
+        read.push(entry);
 
         const homeCode = resolveTeamCode(pm.homeTeam, nameToCode, knownCodes);
         const awayCode = resolveTeamCode(pm.awayTeam, nameToCode, knownCodes);
@@ -125,13 +198,20 @@ export class LiveResultsService {
           unmatchedFixtures++;
           continue;
         }
+        entry.matched = true;
 
-        const homeScore = pm.score.fullTime.home ?? 0;
-        const awayScore = pm.score.fullTime.away ?? 0;
         const team1IsHome = local.team1Code === homeCode;
         const score1 = team1IsHome ? homeScore : awayScore;
         const score2 = team1IsHome ? awayScore : homeScore;
         const live = pm.status !== 'FINISHED';
+
+        if (debug) {
+          this.logger.log(
+            `[debug] ${homeCode} ${homeScore}-${awayScore} ${awayCode} ` +
+              `| provider status=${pm.status} | stored ${local.score1 ?? '-'}-${local.score2 ?? '-'} ` +
+              `live=${local.live} status=${local.status}`,
+          );
+        }
 
         // Skip if nothing changed, to avoid redundant point recalculations.
         if (
@@ -145,8 +225,16 @@ export class LiveResultsService {
 
         await this.matchesService.setResult(local.id, score1, score2, live);
         await this.predictionsService.calculatePoints(local.id, score1, score2);
+        entry.changed = true;
         updated++;
       }
+
+      const dedupedTeams = [...new Set(unmatchedTeams)];
+      this.status.polledAt = new Date().toISOString();
+      this.status.updated = updated;
+      this.status.unmatchedFixtures = unmatchedFixtures;
+      this.status.unmatchedTeams = dedupedTeams;
+      this.status.fixtures = read;
 
       return { polled: true, updated, unmatchedTeams, unmatchedFixtures };
     } finally {

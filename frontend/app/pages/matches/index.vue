@@ -38,6 +38,11 @@
             :to="`/matches/${match._id}`"
             class="card block hover:bg-gray-50 transition-colors"
           >
+            <div class="sm:hidden flex items-center justify-between text-xs text-gray-400 mb-2">
+              <span>{{ formatDate(match.date) }}</span>
+              <span v-if="match.venue" class="truncate max-w-[55%] text-right">{{ match.venue }}</span>
+            </div>
+
             <div class="flex items-center gap-3">
             <div class="flex-1 flex items-center justify-end gap-2 min-w-0">
               <span class="font-medium text-primary truncate text-right">
@@ -131,7 +136,7 @@ definePageMeta({ middleware: 'auth' })
 const { t } = useI18n()
 const matchesStore = useMatchesStore()
 const loading = ref(true)
-const viewMode = ref<'group' | 'date'>('group')
+const viewMode = ref<'group' | 'date'>('date')
 
 const stageLabels: Record<string, string> = {
   group: t('matches.stageGroup'),

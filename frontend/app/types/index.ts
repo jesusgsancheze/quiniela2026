@@ -124,3 +124,24 @@ export interface GroupStandings {
   groupName: string
   standings: TeamStanding[]
 }
+
+export interface ReadFixture {
+  home: string
+  away: string
+  score: string
+  status: string
+  matched: boolean
+  changed: boolean
+}
+
+export interface LiveSyncStatus {
+  checkedAt: string | null
+  polledAt: string | null
+  enabled: boolean
+  inWindow: boolean
+  updated: number
+  unmatchedFixtures: number
+  unmatchedTeams: string[]
+  fixtures: ReadFixture[]
+  error: string | null
+}
