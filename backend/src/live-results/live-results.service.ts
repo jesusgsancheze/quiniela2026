@@ -15,7 +15,7 @@ const LIVE_WINDOW_MS = 3.5 * 60 * 60 * 1000;
 /** How early before kickoff we start polling. */
 const PRE_KICKOFF_MS = 10 * 60 * 1000;
 
-interface SyncSummary {
+export interface SyncSummary {
   polled: boolean;
   updated: number;
   unmatchedTeams: string[];
