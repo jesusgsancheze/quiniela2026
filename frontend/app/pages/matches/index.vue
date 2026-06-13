@@ -217,4 +217,11 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+// Refresh scores in the background so live results appear without a reload.
+// Polls quickly while a match is live, slowly otherwise; pauses when the tab
+// is hidden.
+useLivePolling(() => matchesStore.fetchMatches(undefined, { silent: true }), {
+  isLive: () => matchesStore.hasLiveMatches,
+})
 </script>

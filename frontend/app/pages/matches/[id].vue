@@ -218,21 +218,30 @@ function formatDate(dateStr: string): string {
   })
 }
 
-onMounted(async () => {
+async function loadMatch() {
   const matchId = route.params.id as string
+  const [m, preds] = await Promise.all([
+    apiFetch<Match>(`/api/matches/${matchId}`),
+    apiFetch<MatchPrediction[]>(`/api/predictions/match/${matchId}`),
+  ])
+  match.value = m
+  predictions.value = [...preds].sort((a, b) => {
+    const pa = a.points ?? -1
+    const pb = b.points ?? -1
+    return pb - pa
+  })
+}
+
+onMounted(async () => {
   try {
-    const [m, preds] = await Promise.all([
-      apiFetch<Match>(`/api/matches/${matchId}`),
-      apiFetch<MatchPrediction[]>(`/api/predictions/match/${matchId}`),
-    ])
-    match.value = m
-    predictions.value = [...preds].sort((a, b) => {
-      const pa = a.points ?? -1
-      const pb = b.points ?? -1
-      return pb - pa
-    })
+    await loadMatch()
   } finally {
     loading.value = false
   }
+})
+
+// Keep the score (and points, which recalculate live) fresh in the background.
+useLivePolling(() => loadMatch(), {
+  isLive: () => match.value?.live === true,
 })
 </script>

@@ -20,6 +20,7 @@ export const useMatchesStore = defineStore('matches', {
       state.matches.filter((m) => m.stage === 'group'),
     knockoutMatches: (state) =>
       state.matches.filter((m) => m.stage !== 'group'),
+    hasLiveMatches: (state) => state.matches.some((m) => m.live === true),
     matchesByGroup: (state) => {
       const groups: Record<string, Match[]> = {}
       state.matches
@@ -34,12 +35,17 @@ export const useMatchesStore = defineStore('matches', {
   },
 
   actions: {
-    async fetchMatches(filters?: {
-      stage?: string
-      group?: string
-      status?: string
-    }) {
-      this.loading = true
+    async fetchMatches(
+      filters?: {
+        stage?: string
+        group?: string
+        status?: string
+      },
+      opts?: { silent?: boolean },
+    ) {
+      // Background refreshes (silent) must not flip the loading flag, or the
+      // list would flash the spinner on every poll.
+      if (!opts?.silent) this.loading = true
       try {
         const { apiFetch } = useApi()
         const params = new URLSearchParams()
@@ -51,7 +57,7 @@ export const useMatchesStore = defineStore('matches', {
           `/api/matches${query ? `?${query}` : ''}`,
         )
       } finally {
-        this.loading = false
+        if (!opts?.silent) this.loading = false
       }
     },
 

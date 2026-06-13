@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { resolve } from 'path';
 import { AuthModule } from './auth/auth.module.js';
@@ -14,6 +15,7 @@ import { SeederModule } from './seeder/seeder.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
 import { EntriesModule } from './entries/entries.module.js';
 import { MailModule } from './mail/mail.module.js';
+import { LiveResultsModule } from './live-results/live-results.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
 
@@ -30,6 +32,7 @@ import { RolesGuard } from './common/guards/roles.guard.js';
       }),
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
     TeamsModule,
@@ -41,6 +44,7 @@ import { RolesGuard } from './common/guards/roles.guard.js';
     EntriesModule,
     PaymentsModule,
     MailModule,
+    LiveResultsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
