@@ -50,9 +50,31 @@ export class LiveResultsService {
    */
   @Cron(CronExpression.EVERY_MINUTE)
   async scheduledSync(): Promise<void> {
-    if (!this.enabled) return;
+    // Heartbeat: proves the cron is firing every minute and surfaces why a
+    // tick is a no-op. Set LIVE_RESULTS_HEARTBEAT=false to silence once happy.
+    const heartbeat = this.config.get<string>('LIVE_RESULTS_HEARTBEAT') !== 'false';
+
+    if (!this.enabled) {
+      if (heartbeat) {
+        const reason =
+          this.config.get<string>('LIVE_RESULTS_ENABLED') === 'true'
+            ? 'provider API key missing'
+            : 'LIVE_RESULTS_ENABLED is not "true"';
+        this.logger.log(`Heartbeat: cron alive, sync disabled (${reason}).`);
+      }
+      return;
+    }
+
     try {
       const summary = await this.sync();
+      if (heartbeat) {
+        this.logger.log(
+          summary.polled
+            ? `Heartbeat: polled provider, updated ${summary.updated} match(es), ` +
+                `${summary.unmatchedFixtures} unmatched fixture(s).`
+            : 'Heartbeat: cron alive, no fixture in live window — skipped API call.',
+        );
+      }
       if (summary.polled && summary.updated > 0) {
         this.logger.log(`Live sync: updated ${summary.updated} match(es).`);
       }
