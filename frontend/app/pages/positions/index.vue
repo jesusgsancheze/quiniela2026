@@ -66,7 +66,7 @@
                     {{ entry.firstName }} {{ entry.lastName }}
                     <span class="sm:hidden text-xs text-gray-500 font-normal">· #{{ entry.entryNumber }}</span>
                   </p>
-                  <p class="hidden sm:block text-xs text-gray-400 truncate">{{ entry.email }}</p>
+                  <p class="hidden sm:block text-xs text-gray-400 truncate">{{ maskEmail(entry.email) }}</p>
                 </div>
               </div>
             </td>
@@ -152,6 +152,23 @@ const hasUnlockedAccess = computed(() => {
   if (authStore.isAdmin) return true
   return entriesStore.entries.some((e) => e.paymentStatus === 'confirmed')
 })
+
+// Masks an email for privacy: keeps the first 2 and last 2 characters of the
+// local part (before the @) and replaces the middle with asterisks. The domain
+// is hidden entirely. e.g. "johndoe@gmail.com" -> "jo****oe@*****"
+function maskEmail(email?: string | null): string {
+  if (!email) return ''
+  const [local, domain] = email.split('@')
+  if (!domain) return email
+  let maskedLocal: string
+  if (local.length <= 4) {
+    maskedLocal = local[0] + '*'.repeat(Math.max(local.length - 1, 1))
+  } else {
+    maskedLocal =
+      local.slice(0, 2) + '*'.repeat(local.length - 4) + local.slice(-2)
+  }
+  return `${maskedLocal}@${'*'.repeat(domain.length)}`
+}
 
 function isCurrentUser(userId: string): boolean {
   const user = authStore.user

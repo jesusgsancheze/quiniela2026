@@ -118,6 +118,16 @@ export class LeaderboardService {
       .filter(Boolean)
       .sort((a, b) => b!.totalPoints - a!.totalPoints);
 
-    return results.map((r, i) => ({ ...r, rank: i + 1 }));
+    // Standard competition ranking ("1224"): players with the same
+    // totalPoints share the same rank, and the next distinct score skips
+    // ahead by the number of tied players.
+    let lastPoints: number | null = null;
+    let lastRank = 0;
+    return results.map((r, i) => {
+      const rank = r!.totalPoints === lastPoints ? lastRank : i + 1;
+      lastPoints = r!.totalPoints;
+      lastRank = rank;
+      return { ...r, rank };
+    });
   }
 }
