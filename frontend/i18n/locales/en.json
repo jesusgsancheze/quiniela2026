@@ -76,7 +76,12 @@
     "predictionsCount": "{count} predictions",
     "viewByGroup": "By group",
     "viewByDate": "By date",
-    "live": "Live"
+    "live": "Live",
+    "searchPlaceholder": "Search by team name…",
+    "allDates": "All dates",
+    "filterDate": "Date",
+    "clearFilters": "Clear filters",
+    "noResults": "No matches found for these filters."
   },
   "auth": {
     "signIn": "Sign In",
@@ -149,6 +154,9 @@
     "unmatched": "Unmatched",
     "matchesRead": "Fixtures read on last poll",
     "noFixtures": "No started fixtures in the last poll.",
+    "showing": "Showing {from}–{to} of {total}",
+    "prev": "Previous",
+    "next": "Next",
     "changed": "updated",
     "skipped": "no change",
     "notMatched": "not mapped",

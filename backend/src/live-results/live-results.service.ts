@@ -25,6 +25,8 @@ export interface SyncSummary {
 
 /** A single fixture as seen by the provider on the last poll. */
 export interface ReadFixture {
+  /** Kickoff time (ISO) as reported by the provider, used for sorting. */
+  date: string | null;
   home: string;
   away: string;
   score: string;
@@ -229,6 +231,7 @@ export class LiveResultsService implements OnModuleInit {
         const homeScore = pm.score.fullTime.home ?? 0;
         const awayScore = pm.score.fullTime.away ?? 0;
         const entry: ReadFixture = {
+          date: pm.utcDate ?? null,
           home: pm.homeTeam.name ?? '??',
           away: pm.awayTeam.name ?? '??',
           score: `${homeScore}-${awayScore}`,

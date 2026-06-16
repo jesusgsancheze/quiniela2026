@@ -22,8 +22,49 @@
       </div>
     </div>
 
+    <!-- Filters -->
+    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+      <div class="relative flex-1">
+        <input
+          v-model="searchText"
+          type="text"
+          :placeholder="$t('matches.searchPlaceholder')"
+          class="input-field w-full pl-3 pr-9 py-2 text-sm"
+        />
+        <button
+          v-if="searchText"
+          type="button"
+          class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg leading-none"
+          @click="searchText = ''"
+        >
+          ×
+        </button>
+      </div>
+      <select
+        v-model="selectedDate"
+        class="input-field sm:w-56 py-2 text-sm"
+      >
+        <option value="">{{ $t('matches.allDates') }}</option>
+        <option v-for="d in availableDates" :key="d.key" :value="d.key">
+          {{ d.label }}
+        </option>
+      </select>
+      <button
+        v-if="searchText || selectedDate"
+        type="button"
+        class="btn-outline text-sm px-3 py-2 self-start"
+        @click="clearFilters"
+      >
+        {{ $t('matches.clearFilters') }}
+      </button>
+    </div>
+
     <div v-if="loading" class="text-center py-12 text-gray-500">
       {{ $t('matches.loading') }}
+    </div>
+
+    <div v-else-if="filteredMatches.length === 0" class="text-center py-12 text-gray-400">
+      {{ $t('matches.noResults') }}
     </div>
 
     <div v-else class="space-y-8">
@@ -138,6 +179,67 @@ const matchesStore = useMatchesStore()
 const loading = ref(true)
 const viewMode = ref<'group' | 'date'>('date')
 
+// --- Filters ---
+const searchText = ref('')
+const selectedDate = ref('') // '' = all dates, otherwise a YYYY-MM-DD key
+
+function clearFilters() {
+  searchText.value = ''
+  selectedDate.value = ''
+}
+
+// Local-time date key (YYYY-MM-DD) so a match groups under the day it's played.
+function toDateKey(dateStr: string): string {
+  const d = new Date(dateStr)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+// Distinct dates that actually have matches, chronological, for the dropdown.
+const availableDates = computed(() => {
+  const seen = new Map<string, string>()
+  const sorted = [...matchesStore.matches].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  )
+  for (const m of sorted) {
+    const key = toDateKey(m.date)
+    if (!seen.has(key)) {
+      seen.set(
+        key,
+        new Date(m.date).toLocaleDateString(undefined, {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+        }),
+      )
+    }
+  }
+  return Array.from(seen, ([key, label]) => ({ key, label }))
+})
+
+// Matches after applying the date and team-name text filters.
+const filteredMatches = computed(() => {
+  const q = searchText.value.trim().toLowerCase()
+  return matchesStore.matches.filter((m) => {
+    if (selectedDate.value && toDateKey(m.date) !== selectedDate.value) {
+      return false
+    }
+    if (q) {
+      const haystack = [
+        m.team1?.name, m.team1?.code, m.team1Placeholder,
+        m.team2?.name, m.team2?.code, m.team2Placeholder,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      if (!haystack.includes(q)) return false
+    }
+    return true
+  })
+})
+
 const stageLabels: Record<string, string> = {
   group: t('matches.stageGroup'),
   roundOf32: t('matches.stageRoundOf32'),
@@ -153,7 +255,7 @@ const groupedMatches = computed(() => {
   const groupOrder: Record<string, number> = {
     group: 0, roundOf32: 1, roundOf16: 2, quarter: 3, semi: 4, third: 5, final: 6,
   }
-  const sorted = [...matchesStore.matches].sort((a, b) => {
+  const sorted = [...filteredMatches.value].sort((a, b) => {
     const sa = groupOrder[a.stage] ?? 99
     const sb = groupOrder[b.stage] ?? 99
     if (sa !== sb) return sa - sb
@@ -172,7 +274,7 @@ const groupedMatches = computed(() => {
 
 const matchesByDate = computed(() => {
   const result: Record<string, Match[]> = {}
-  const sorted = [...matchesStore.matches].sort(
+  const sorted = [...filteredMatches.value].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   )
   for (const m of sorted) {

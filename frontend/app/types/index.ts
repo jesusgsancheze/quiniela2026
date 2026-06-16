@@ -126,6 +126,7 @@ export interface GroupStandings {
 }
 
 export interface ReadFixture {
+  date: string | null
   home: string
   away: string
   score: string

@@ -105,7 +105,7 @@
       </div>
 
       <p class="text-[11px] uppercase tracking-wider text-gray-400 mb-2">{{ $t('liveStatus.matchesRead') }}</p>
-      <div v-if="liveStatus?.fixtures?.length" class="overflow-x-auto">
+      <div v-if="sortedFixtures.length" class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr class="text-left text-[11px] uppercase text-gray-400 border-b border-gray-100">
@@ -116,7 +116,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(f, i) in liveStatus.fixtures" :key="i" class="border-b border-gray-50">
+            <tr v-for="(f, i) in pagedFixtures" :key="i" class="border-b border-gray-50">
               <td class="py-1.5 pr-2 text-primary">{{ f.home }} vs {{ f.away }}</td>
               <td class="py-1.5 px-2 text-center font-semibold">{{ f.score }}</td>
               <td class="py-1.5 px-2 text-center text-gray-500">{{ f.status }}</td>
@@ -128,6 +128,32 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- Pagination -->
+        <div v-if="totalPages > 1" class="flex items-center justify-between gap-3 mt-3">
+          <p class="text-[11px] text-gray-400">
+            {{ $t('liveStatus.showing', { from: rangeFrom, to: rangeTo, total: sortedFixtures.length }) }}
+          </p>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              :disabled="fixturePage <= 1"
+              class="text-xs font-medium text-primary border border-gray-200 rounded-md px-2.5 py-1 disabled:opacity-40"
+              @click="fixturePage--"
+            >
+              {{ $t('liveStatus.prev') }}
+            </button>
+            <span class="text-xs text-gray-500">{{ fixturePage }} / {{ totalPages }}</span>
+            <button
+              type="button"
+              :disabled="fixturePage >= totalPages"
+              class="text-xs font-medium text-primary border border-gray-200 rounded-md px-2.5 py-1 disabled:opacity-40"
+              @click="fixturePage++"
+            >
+              {{ $t('liveStatus.next') }}
+            </button>
+          </div>
+        </div>
       </div>
       <p v-else class="text-sm text-gray-400">{{ $t('liveStatus.noFixtures') }}</p>
     </div>
@@ -173,6 +199,43 @@ const myRanking = ref<LeaderboardEntry | null>(null)
 const liveStatus = ref<LiveSyncStatus | null>(null)
 const syncing = ref(false)
 let statusTimer: ReturnType<typeof setInterval> | null = null
+
+// --- Fixtures list: newest first, paginated 10 per page ---
+const FIXTURES_PER_PAGE = 10
+const fixturePage = ref(1)
+
+// Sort by kickoff date, most recent first. Fixtures without a date go last.
+const sortedFixtures = computed(() => {
+  const list = liveStatus.value?.fixtures ?? []
+  return [...list].sort((a, b) => {
+    const ta = a.date ? new Date(a.date).getTime() : -Infinity
+    const tb = b.date ? new Date(b.date).getTime() : -Infinity
+    return tb - ta
+  })
+})
+
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(sortedFixtures.value.length / FIXTURES_PER_PAGE)),
+)
+
+const pagedFixtures = computed(() => {
+  const start = (fixturePage.value - 1) * FIXTURES_PER_PAGE
+  return sortedFixtures.value.slice(start, start + FIXTURES_PER_PAGE)
+})
+
+const rangeFrom = computed(() =>
+  sortedFixtures.value.length === 0
+    ? 0
+    : (fixturePage.value - 1) * FIXTURES_PER_PAGE + 1,
+)
+const rangeTo = computed(() =>
+  Math.min(fixturePage.value * FIXTURES_PER_PAGE, sortedFixtures.value.length),
+)
+
+// Keep the current page within bounds when the list shrinks/grows.
+watch(totalPages, (max) => {
+  if (fixturePage.value > max) fixturePage.value = max
+})
 
 async function loadLiveStatus() {
   try {
