@@ -346,6 +346,162 @@ export class KnockoutService {
   }
 
   // ---------------------------------------------------------------------------
+  // Public views (matches list, per-match picks, per-entry picks, draw)
+  // ---------------------------------------------------------------------------
+
+  /** Every knockout match with its actual info + community advance split. */
+  async getPublicMatches() {
+    const matches = await this.matchModel
+      .find({ stage: { $in: KNOCKOUT_STAGES } })
+      .sort({ matchNumber: 1 })
+      .exec();
+    const teamMap = await this.loadTeamMap();
+    const team = (id: Types.ObjectId | null) =>
+      id ? teamMap.get(id.toString()) ?? null : null;
+
+    const preds = await this.predictionModel
+      .find({}, { match: 1, advances: 1, user: 1, entry: 1 })
+      .populate('user', 'role')
+      .populate('entry', '_id')
+      .lean()
+      .exec();
+    const agg = new Map<string, { team1: number; team2: number; total: number }>();
+    for (const p of preds as any[]) {
+      if (!p.user || p.user.role === 'admin' || !p.entry) continue;
+      const key = p.match.toString();
+      if (!agg.has(key)) agg.set(key, { team1: 0, team2: 0, total: 0 });
+      const a = agg.get(key)!;
+      if (p.advances === 'team1') a.team1++;
+      else a.team2++;
+      a.total++;
+    }
+
+    return matches.map((m) => ({
+      matchId: m._id.toString(),
+      matchNumber: m.matchNumber,
+      stage: m.stage,
+      round: m.round,
+      date: m.date,
+      venue: m.venue,
+      placeholder1: m.team1Placeholder,
+      placeholder2: m.team2Placeholder,
+      team1: team(m.team1),
+      team2: team(m.team2),
+      status: m.status,
+      live: m.live,
+      score1: m.score1,
+      score2: m.score2,
+      decidedOnPenalties: m.decidedOnPenalties,
+      penaltyWinner: m.penaltyWinner,
+      community: agg.get(m._id.toString()) ?? { team1: 0, team2: 0, total: 0 },
+    }));
+  }
+
+  /** All players' picks for one knockout match, with the match's full info. */
+  async getMatchPredictions(matchId: string) {
+    if (!Types.ObjectId.isValid(matchId)) return { match: null, predictions: [] };
+    const m = await this.matchModel.findById(matchId).exec();
+    if (!m || !KNOCKOUT_STAGES.includes(m.stage)) {
+      return { match: null, predictions: [] };
+    }
+    const teamMap = await this.loadTeamMap();
+    const team = (id: Types.ObjectId | null) =>
+      id ? teamMap.get(id.toString()) ?? null : null;
+    const t1 = team(m.team1);
+    const t2 = team(m.team2);
+
+    const preds = await this.predictionModel
+      .find({ match: matchId })
+      .populate('user', 'firstName lastName profilePicture role')
+      .populate('entry', 'entryNumber')
+      .exec();
+
+    const predictions = preds
+      .filter((p: any) => p.user && p.user.role !== 'admin' && p.entry)
+      .map((p: any) => ({
+        _id: p._id.toString(),
+        score1: p.score1,
+        score2: p.score2,
+        advances: p.advances,
+        advancesTeam: p.advances === 'team1' ? t1 : t2,
+        points: p.points,
+        result: p.result,
+        entryNumber: p.entry?.entryNumber ?? null,
+        user: {
+          firstName: p.user.firstName,
+          lastName: p.user.lastName,
+          profilePicture: p.user.profilePicture ?? null,
+        },
+      }));
+
+    return {
+      match: {
+        matchId: m._id.toString(),
+        matchNumber: m.matchNumber,
+        stage: m.stage,
+        round: m.round,
+        date: m.date,
+        venue: m.venue,
+        placeholder1: m.team1Placeholder,
+        placeholder2: m.team2Placeholder,
+        team1: t1,
+        team2: t2,
+        status: m.status,
+        live: m.live,
+        score1: m.score1,
+        score2: m.score2,
+        decidedOnPenalties: m.decidedOnPenalties,
+        penaltyWinner: m.penaltyWinner,
+      },
+      predictions,
+    };
+  }
+
+  /** One entry's picks across every knockout match (for the leaderboard expand). */
+  async getEntryPredictionsDetail(entryId: string) {
+    if (!Types.ObjectId.isValid(entryId)) return { predictions: [] };
+    const preds = await this.predictionModel
+      .find({ entry: new Types.ObjectId(entryId) })
+      .exec();
+    const matches = await this.matchModel
+      .find({ stage: { $in: KNOCKOUT_STAGES } })
+      .exec();
+    const byId = new Map(matches.map((m) => [m._id.toString(), m]));
+    const teamMap = await this.loadTeamMap();
+    const team = (id: Types.ObjectId | null) =>
+      id ? teamMap.get(id.toString()) ?? null : null;
+
+    const predictions = preds
+      .map((p) => {
+        const m = byId.get(p.match.toString());
+        return {
+          matchNumber: m?.matchNumber ?? 0,
+          stage: m?.stage ?? '',
+          round: m?.round ?? '',
+          team1: m ? team(m.team1) : null,
+          team2: m ? team(m.team2) : null,
+          placeholder1: m?.team1Placeholder ?? null,
+          placeholder2: m?.team2Placeholder ?? null,
+          actualScore1: m?.score1 ?? null,
+          actualScore2: m?.score2 ?? null,
+          status: m?.status ?? null,
+          score1: p.score1,
+          score2: p.score2,
+          advances: p.advances,
+          advancesTeam:
+            p.advances === 'team1'
+              ? m ? team(m.team1) : null
+              : m ? team(m.team2) : null,
+          points: p.points,
+          result: p.result,
+        };
+      })
+      .sort((a, b) => a.matchNumber - b.matchNumber);
+
+    return { predictions };
+  }
+
+  // ---------------------------------------------------------------------------
   // Scoring
   // ---------------------------------------------------------------------------
 

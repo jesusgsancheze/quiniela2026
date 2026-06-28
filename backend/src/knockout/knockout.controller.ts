@@ -74,6 +74,21 @@ export class KnockoutController {
     return this.knockout.getRankings();
   }
 
+  @Get('matches')
+  publicMatches() {
+    return this.knockout.getPublicMatches();
+  }
+
+  @Get('matches/:id/predictions')
+  matchPredictions(@Param('id') id: string) {
+    return this.knockout.getMatchPredictions(id);
+  }
+
+  @Get('entries/:id/predictions')
+  entryPredictions(@Param('id') id: string) {
+    return this.knockout.getEntryPredictionsDetail(id);
+  }
+
   // --- Admin: entries ---
 
   @Get('entries')

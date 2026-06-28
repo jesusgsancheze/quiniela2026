@@ -44,6 +44,8 @@
                   <div class="bg-white rounded-lg shadow-lg py-2 w-52">
                     <NuxtLink v-if="authStore.isAdmin" to="/admin/knockout" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.knockoutAdmin') }}</NuxtLink>
                     <NuxtLink v-else to="/knockout" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.bracket') }}</NuxtLink>
+                    <NuxtLink to="/knockout/matches" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.knockoutMatches') }}</NuxtLink>
+                    <NuxtLink to="/knockout/draw" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.knockoutDraw') }}</NuxtLink>
                     <NuxtLink to="/knockout/standings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.bracketStandings') }}</NuxtLink>
                   </div>
                 </div>
@@ -171,6 +173,12 @@
               </NuxtLink>
               <NuxtLink v-else to="/knockout" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
                 {{ $t('nav.bracket') }}
+              </NuxtLink>
+              <NuxtLink to="/knockout/matches" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                {{ $t('nav.knockoutMatches') }}
+              </NuxtLink>
+              <NuxtLink to="/knockout/draw" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                {{ $t('nav.knockoutDraw') }}
               </NuxtLink>
               <NuxtLink to="/knockout/standings" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
                 {{ $t('nav.bracketStandings') }}

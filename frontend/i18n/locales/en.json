@@ -22,7 +22,9 @@
     "knockoutAdmin": "Knockout",
     "groupStage": "Group Stage",
     "knockoutStage": "Knockout",
-    "general": "General"
+    "general": "General",
+    "knockoutMatches": "Knockout Matches",
+    "knockoutDraw": "Draw"
   },
   "rules": {
     "title": "How to Play",
@@ -406,6 +408,22 @@
     "saveFailed": "Could not save pick.",
     "standingsTitle": "Bracket Standings",
     "backToBracket": "Back to bracket"
+  },
+  "knockoutMatches": {
+    "title": "Knockout Matches",
+    "viewDraw": "View draw",
+    "communityAdvances": "Who players advance",
+    "back": "Back to knockout matches",
+    "notFound": "Match not found.",
+    "allPicks": "All players' picks",
+    "noPicks": "No picks for this match yet.",
+    "pick": "Pick",
+    "advances": "Advances"
+  },
+  "knockoutDraw": {
+    "title": "Knockout Draw",
+    "viewMatches": "View matches",
+    "scrollHint": "Scroll sideways to see the full bracket →"
   },
   "adminKnockout": {
     "title": "Knockout Management",

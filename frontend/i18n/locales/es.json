@@ -22,7 +22,9 @@
     "knockoutAdmin": "Eliminatorias",
     "groupStage": "Fase de Grupos",
     "knockoutStage": "Eliminatorias",
-    "general": "General"
+    "general": "General",
+    "knockoutMatches": "Partidos Eliminatorias",
+    "knockoutDraw": "Cuadro"
   },
   "rules": {
     "title": "Cómo Jugar",
@@ -406,6 +408,22 @@
     "saveFailed": "No se pudo guardar.",
     "standingsTitle": "Posiciones de Eliminatorias",
     "backToBracket": "Volver al cuadro"
+  },
+  "knockoutMatches": {
+    "title": "Partidos de Eliminatorias",
+    "viewDraw": "Ver cuadro",
+    "communityAdvances": "Quién avanza según los jugadores",
+    "back": "Volver a partidos de eliminatorias",
+    "notFound": "Partido no encontrado.",
+    "allPicks": "Predicciones de todos",
+    "noPicks": "Aún no hay predicciones para este partido.",
+    "pick": "Predicción",
+    "advances": "Avanza"
+  },
+  "knockoutDraw": {
+    "title": "Cuadro de Eliminatorias",
+    "viewMatches": "Ver partidos",
+    "scrollHint": "Desliza de lado para ver todo el cuadro →"
   },
   "adminKnockout": {
     "title": "Gestión de Eliminatorias",

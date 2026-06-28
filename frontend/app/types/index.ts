@@ -202,3 +202,59 @@ export interface KnockoutBracket {
   deadline: string
   matches: KnockoutBracketMatch[]
 }
+
+export interface KnockoutPublicMatch {
+  matchId: string
+  matchNumber: number
+  stage: string
+  round: string
+  date: string
+  venue: string
+  placeholder1: string | null
+  placeholder2: string | null
+  team1: TeamLite | null
+  team2: TeamLite | null
+  status: 'scheduled' | 'finished'
+  live: boolean
+  score1: number | null
+  score2: number | null
+  decidedOnPenalties: boolean
+  penaltyWinner: 'team1' | 'team2' | null
+  community: { team1: number; team2: number; total: number }
+}
+
+export interface KnockoutMatchPick {
+  _id: string
+  score1: number
+  score2: number
+  advances: 'team1' | 'team2'
+  advancesTeam: TeamLite | null
+  points: number | null
+  result: 'exact' | 'correct' | 'miss' | null
+  entryNumber: number | null
+  user: { firstName: string; lastName: string; profilePicture: string | null }
+}
+
+export interface KnockoutMatchDetail {
+  match: Omit<KnockoutPublicMatch, 'community'> | null
+  predictions: KnockoutMatchPick[]
+}
+
+export interface KnockoutEntryPredictionRow {
+  matchNumber: number
+  stage: string
+  round: string
+  team1: TeamLite | null
+  team2: TeamLite | null
+  placeholder1: string | null
+  placeholder2: string | null
+  actualScore1: number | null
+  actualScore2: number | null
+  status: string | null
+  score1: number
+  score2: number
+  advances: 'team1' | 'team2'
+  advancesTeam: TeamLite | null
+  points: number | null
+  result: 'exact' | 'correct' | 'miss' | null
+}
