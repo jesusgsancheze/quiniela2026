@@ -77,6 +77,12 @@ export class LeaderboardService {
               $cond: [{ $gt: ['$points', null] }, 1, 0],
             },
           },
+          exactCount: {
+            $sum: { $cond: [{ $eq: ['$points', 3] }, 1, 0] },
+          },
+          correctCount: {
+            $sum: { $cond: [{ $eq: ['$points', 1] }, 1, 0] },
+          },
         },
       },
     ]);
@@ -113,6 +119,8 @@ export class LeaderboardService {
           profilePicture: user.profilePicture,
           totalPoints: g.totalPoints || 0,
           matchesScored: g.matchesScored || 0,
+          exactCount: g.exactCount || 0,
+          correctCount: g.correctCount || 0,
         };
       })
       .filter(Boolean)

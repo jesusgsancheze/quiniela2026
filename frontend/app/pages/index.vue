@@ -169,11 +169,19 @@
           <h3 class="font-semibold text-primary text-lg">{{ $t('home.managePlayers') }}</h3>
           <p class="text-gray-500 text-sm mt-1">{{ $t('home.managePlayersDesc') }}</p>
         </NuxtLink>
+        <NuxtLink to="/admin/knockout" class="card hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-secondary">
+          <h3 class="font-semibold text-primary text-lg">{{ $t('home.knockoutAdmin') }}</h3>
+          <p class="text-gray-500 text-sm mt-1">{{ $t('home.knockoutAdminDesc') }}</p>
+        </NuxtLink>
       </template>
       <template v-else>
         <NuxtLink to="/predictions" class="card hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-accent">
           <h3 class="font-semibold text-primary text-lg">{{ $t('home.myPredictions') }}</h3>
           <p class="text-gray-500 text-sm mt-1">{{ $t('home.myPredictionsDesc') }}</p>
+        </NuxtLink>
+        <NuxtLink to="/knockout" class="card hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-accent">
+          <h3 class="font-semibold text-primary text-lg">{{ $t('home.bracket') }}</h3>
+          <p class="text-gray-500 text-sm mt-1">{{ $t('home.bracketDesc') }}</p>
         </NuxtLink>
       </template>
       <NuxtLink to="/positions" class="card hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-primary">

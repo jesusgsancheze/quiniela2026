@@ -27,6 +27,8 @@
             <th class="py-3 px-2 sm:px-4 text-left text-xs sm:text-sm font-semibold text-primary">{{ $t('positions.player') }}</th>
             <th class="hidden sm:table-cell py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.entry') }}</th>
             <th class="hidden md:table-cell py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.matches') }}</th>
+            <th class="hidden md:table-cell py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.exact') }}</th>
+            <th class="hidden md:table-cell py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.correct') }}</th>
             <th class="py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-semibold text-primary w-16 sm:w-auto">{{ $t('positions.points') }}</th>
             <th class="py-3 px-2 sm:px-4 w-6"></th>
           </tr>
@@ -76,6 +78,16 @@
               </span>
             </td>
             <td class="hidden md:table-cell py-3 px-4 text-center text-gray-600">{{ entry.matchesScored }}</td>
+            <td class="hidden md:table-cell py-3 px-4 text-center">
+              <span class="inline-flex items-center justify-center min-w-[28px] px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                {{ entry.exactCount ?? 0 }}
+              </span>
+            </td>
+            <td class="hidden md:table-cell py-3 px-4 text-center">
+              <span class="inline-flex items-center justify-center min-w-[28px] px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                {{ entry.correctCount ?? 0 }}
+              </span>
+            </td>
             <td class="py-3 px-2 sm:px-4 text-center">
               <span class="font-bold text-base sm:text-lg text-primary">{{ entry.totalPoints }}</span>
             </td>
@@ -84,7 +96,7 @@
             </td>
             </tr>
             <tr v-if="expandedEntryId === entry.entryId" class="bg-gray-50">
-              <td colspan="6" class="px-2 sm:px-4 py-3 sm:py-4">
+              <td colspan="8" class="px-2 sm:px-4 py-3 sm:py-4">
                 <div v-if="entryDetailsLoading" class="text-sm text-gray-500 text-center py-4">
                   {{ $t('positions.loadingDetails') }}
                 </div>

@@ -10,6 +10,10 @@ import { MatchesService } from '../matches/matches.service.js';
 import { PredictionsService } from '../predictions/predictions.service.js';
 import { FootballDataProvider, ProviderMatch } from './football-data.provider.js';
 import { normalizeName, resolveTeamCode, pairKey } from './team-alias.js';
+import { KnockoutBracketService } from '../knockout/knockout-bracket.service.js';
+import { KnockoutService } from '../knockout/knockout.service.js';
+
+const KNOCKOUT_STAGES = ['round32', 'round16', 'quarter', 'semi', 'third', 'final'];
 
 /** How long after kickoff we keep polling a fixture (covers ET + penalties). */
 const LIVE_WINDOW_MS = 3.5 * 60 * 60 * 1000;
@@ -84,6 +88,8 @@ export class LiveResultsService implements OnModuleInit {
     private readonly provider: FootballDataProvider,
     private readonly matchesService: MatchesService,
     private readonly predictionsService: PredictionsService,
+    private readonly knockoutBracket: KnockoutBracketService,
+    private readonly knockoutService: KnockoutService,
     @InjectModel(Match.name) private readonly matchModel: Model<Match>,
     @InjectModel(Team.name) private readonly teamModel: Model<Team>,
     @InjectModel(LiveSyncStatusDoc.name)
@@ -221,6 +227,7 @@ export class LiveResultsService implements OnModuleInit {
 
       let updated = 0;
       let unmatchedFixtures = 0;
+      let knockoutChanged = false;
       const unmatchedTeams: string[] = [];
       const read: ReadFixture[] = [];
 
@@ -267,6 +274,46 @@ export class LiveResultsService implements OnModuleInit {
           );
         }
 
+        // --- Knockout matches: capture penalties, then progress + rescore. ---
+        if (KNOCKOUT_STAGES.includes(local.stage)) {
+          const finished = !live;
+          const tie = score1 === score2;
+          let decidedOnPenalties = false;
+          let penaltyWinner: 'team1' | 'team2' | null = null;
+          if (finished && tie) {
+            const w = pm.score.winner;
+            if (w === 'HOME_TEAM' || w === 'AWAY_TEAM') {
+              const advancingIsHome = w === 'HOME_TEAM';
+              penaltyWinner = advancingIsHome === team1IsHome ? 'team1' : 'team2';
+              decidedOnPenalties = true;
+            } else if (pm.score.duration === 'PENALTY_SHOOTOUT') {
+              // Shootout happened but the winner field is missing — record that
+              // it was decided on penalties; an admin can set the winner.
+              decidedOnPenalties = true;
+            }
+          }
+
+          const unchanged =
+            local.score1 === score1 &&
+            local.score2 === score2 &&
+            local.live === live &&
+            local.status === 'finished' &&
+            local.decidedOnPenalties === decidedOnPenalties &&
+            (local.penaltyWinner ?? null) === penaltyWinner;
+          if (unchanged) continue;
+
+          await this.knockoutBracket.applyLiveResult(local.id, score1, score2, {
+            live,
+            decidedOnPenalties,
+            penaltyWinner,
+          });
+          entry.changed = true;
+          updated++;
+          knockoutChanged = true;
+          continue;
+        }
+
+        // --- Group matches ---
         // Skip if nothing changed, to avoid redundant point recalculations.
         if (
           local.score1 === score1 &&
@@ -281,6 +328,12 @@ export class LiveResultsService implements OnModuleInit {
         await this.predictionsService.calculatePoints(local.id, score1, score2);
         entry.changed = true;
         updated++;
+      }
+
+      // After a knockout result lands, propagate winners and rescore brackets.
+      if (knockoutChanged) {
+        await this.knockoutBracket.progressBracket();
+        await this.knockoutService.recalcAllPoints();
       }
 
       const dedupedTeams = [...new Set(unmatchedTeams)];
@@ -337,6 +390,9 @@ export class LiveResultsService implements OnModuleInit {
         live: boolean;
         status: string;
         date: Date;
+        stage: string;
+        decidedOnPenalties: boolean;
+        penaltyWinner: 'team1' | 'team2' | null;
       }
     >
   > {
@@ -354,6 +410,9 @@ export class LiveResultsService implements OnModuleInit {
       live: boolean;
       status: string;
       date: Date;
+      stage: string;
+      decidedOnPenalties: boolean;
+      penaltyWinner: 'team1' | 'team2' | null;
     }>();
 
     for (const m of matches) {
@@ -369,6 +428,9 @@ export class LiveResultsService implements OnModuleInit {
         live: m.live,
         status: m.status,
         date: m.date,
+        stage: m.stage,
+        decidedOnPenalties: m.decidedOnPenalties,
+        penaltyWinner: m.penaltyWinner,
       };
       // If two fixtures share a pair (shouldn't happen at WC), keep the nearest
       // to "now" so live data lands on the match actually being played.

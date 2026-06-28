@@ -27,6 +27,10 @@ export interface ProviderMatch {
   homeTeam: ProviderTeam;
   awayTeam: ProviderTeam;
   score: {
+    /** Overall winner, accounting for extra time and penalties. */
+    winner?: 'HOME_TEAM' | 'AWAY_TEAM' | 'DRAW' | null;
+    /** e.g. 'REGULAR', 'EXTRA_TIME', 'PENALTY_SHOOTOUT'. */
+    duration?: string;
     fullTime: { home: number | null; away: number | null };
     halfTime: { home: number | null; away: number | null };
   };

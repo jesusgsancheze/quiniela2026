@@ -13,33 +13,51 @@
           <ClientOnly>
             <!-- Desktop nav -->
             <nav class="hidden md:flex items-center gap-4">
-              <template v-if="authStore.isAdmin">
-                <NuxtLink to="/admin/games" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
-                  {{ $t('nav.games') }}
-                </NuxtLink>
-                <NuxtLink to="/admin/players" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
-                  {{ $t('nav.players') }}
-                </NuxtLink>
-                <NuxtLink to="/admin/payments" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
-                  {{ $t('nav.paymentSettings') }}
-                </NuxtLink>
-              </template>
-              <template v-else>
-                <NuxtLink to="/predictions" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
-                  {{ $t('nav.myPredictions') }}
-                </NuxtLink>
-                <NuxtLink to="/payment" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
-                  {{ $t('nav.payment') }}
-                </NuxtLink>
-              </template>
-              <NuxtLink to="/standings" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
-                {{ $t('nav.standings') }}
+              <!-- Group Stage submenu -->
+              <div class="relative group">
+                <button class="flex items-center gap-1 text-gray-300 hover:text-white text-sm font-medium transition-colors">
+                  {{ $t('nav.groupStage') }}
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div class="absolute left-0 top-full pt-2 hidden group-hover:block z-50">
+                  <div class="bg-white rounded-lg shadow-lg py-2 w-52">
+                    <NuxtLink v-if="authStore.isAdmin" to="/admin/games" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.games') }}</NuxtLink>
+                    <NuxtLink v-else to="/predictions" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.myPredictions') }}</NuxtLink>
+                    <NuxtLink to="/matches" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.matches') }}</NuxtLink>
+                    <NuxtLink to="/standings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.standings') }}</NuxtLink>
+                    <NuxtLink to="/positions" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.positions') }}</NuxtLink>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Knockout submenu -->
+              <div class="relative group">
+                <button class="flex items-center gap-1 text-gray-300 hover:text-white text-sm font-medium transition-colors">
+                  {{ $t('nav.knockoutStage') }}
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div class="absolute left-0 top-full pt-2 hidden group-hover:block z-50">
+                  <div class="bg-white rounded-lg shadow-lg py-2 w-52">
+                    <NuxtLink v-if="authStore.isAdmin" to="/admin/knockout" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.knockoutAdmin') }}</NuxtLink>
+                    <NuxtLink v-else to="/knockout" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.bracket') }}</NuxtLink>
+                    <NuxtLink to="/knockout/standings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">{{ $t('nav.bracketStandings') }}</NuxtLink>
+                  </div>
+                </div>
+              </div>
+
+              <!-- General -->
+              <NuxtLink v-if="authStore.isAdmin" to="/admin/players" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
+                {{ $t('nav.players') }}
               </NuxtLink>
-              <NuxtLink to="/matches" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
-                {{ $t('nav.matches') }}
+              <NuxtLink v-if="authStore.isAdmin" to="/admin/payments" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
+                {{ $t('nav.paymentSettings') }}
               </NuxtLink>
-              <NuxtLink to="/positions" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
-                {{ $t('nav.positions') }}
+              <NuxtLink v-else to="/payment" class="text-gray-300 hover:text-white text-sm font-medium transition-colors">
+                {{ $t('nav.payment') }}
               </NuxtLink>
 
               <!-- Rules button -->
@@ -128,34 +146,46 @@
                 </div>
               </div>
 
-              <!-- Nav links -->
-              <template v-if="authStore.isAdmin">
-                <NuxtLink to="/admin/games" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
-                  {{ $t('nav.games') }}
-                </NuxtLink>
-                <NuxtLink to="/admin/players" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
-                  {{ $t('nav.players') }}
-                </NuxtLink>
-                <NuxtLink to="/admin/payments" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
-                  {{ $t('nav.paymentSettings') }}
-                </NuxtLink>
-              </template>
-              <template v-else>
-                <NuxtLink to="/predictions" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
-                  {{ $t('nav.myPredictions') }}
-                </NuxtLink>
-                <NuxtLink to="/payment" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
-                  {{ $t('nav.payment') }}
-                </NuxtLink>
-              </template>
-              <NuxtLink to="/standings" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
-                {{ $t('nav.standings') }}
+              <!-- Group Stage section -->
+              <p class="px-3 pt-1 pb-1 text-[11px] uppercase tracking-wider text-gray-500 font-semibold">{{ $t('nav.groupStage') }}</p>
+              <NuxtLink v-if="authStore.isAdmin" to="/admin/games" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                {{ $t('nav.games') }}
               </NuxtLink>
-              <NuxtLink to="/matches" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+              <NuxtLink v-else to="/predictions" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                {{ $t('nav.myPredictions') }}
+              </NuxtLink>
+              <NuxtLink to="/matches" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
                 {{ $t('nav.matches') }}
               </NuxtLink>
-              <NuxtLink to="/positions" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+              <NuxtLink to="/standings" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                {{ $t('nav.standings') }}
+              </NuxtLink>
+              <NuxtLink to="/positions" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
                 {{ $t('nav.positions') }}
+              </NuxtLink>
+
+              <!-- Knockout section -->
+              <p class="px-3 pt-3 pb-1 text-[11px] uppercase tracking-wider text-gray-500 font-semibold">{{ $t('nav.knockoutStage') }}</p>
+              <NuxtLink v-if="authStore.isAdmin" to="/admin/knockout" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                {{ $t('nav.knockoutAdmin') }}
+              </NuxtLink>
+              <NuxtLink v-else to="/knockout" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                {{ $t('nav.bracket') }}
+              </NuxtLink>
+              <NuxtLink to="/knockout/standings" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                {{ $t('nav.bracketStandings') }}
+              </NuxtLink>
+
+              <!-- General section -->
+              <p class="px-3 pt-3 pb-1 text-[11px] uppercase tracking-wider text-gray-500 font-semibold">{{ $t('nav.general') }}</p>
+              <NuxtLink v-if="authStore.isAdmin" to="/admin/players" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                {{ $t('nav.players') }}
+              </NuxtLink>
+              <NuxtLink v-if="authStore.isAdmin" to="/admin/payments" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                {{ $t('nav.paymentSettings') }}
+              </NuxtLink>
+              <NuxtLink v-else to="/payment" class="block py-2 px-5 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                {{ $t('nav.payment') }}
               </NuxtLink>
               <button
                 @click="openRulesMobile"

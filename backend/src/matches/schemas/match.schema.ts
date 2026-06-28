@@ -50,6 +50,15 @@ export class Match extends Document {
   // still counts as finished for points, standings and prediction locking.
   @Prop({ default: false })
   live: boolean;
+
+  // --- Knockout-only fields ---
+  // True when a knockout match ended level and was decided on penalties.
+  @Prop({ default: false })
+  decidedOnPenalties: boolean;
+
+  // For knockout ties decided on penalties: which side advanced.
+  @Prop({ type: String, enum: ['team1', 'team2', null], default: null })
+  penaltyWinner: 'team1' | 'team2' | null;
 }
 
 export const MatchSchema = SchemaFactory.createForClass(Match);

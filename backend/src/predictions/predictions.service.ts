@@ -44,6 +44,13 @@ export class PredictionsService {
       );
     }
 
+    // Per-match lock: a pick can't be changed once that match has kicked off
+    // or once a result has been entered for it.
+    const match = await this.matchesService.findById(matchId);
+    if (match.status === 'finished' || new Date() >= new Date(match.date)) {
+      throw new ForbiddenException('This match has already started.');
+    }
+
     const targetEntry = entryId
       ? await this.entriesService.findEntryForUser(entryId, userId)
       : await this.entriesService.findLatestConfirmedEntry(userId);

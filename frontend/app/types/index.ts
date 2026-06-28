@@ -75,6 +75,8 @@ export interface LeaderboardEntry {
   profilePicture: string | null
   totalPoints: number
   matchesScored: number
+  exactCount?: number
+  correctCount?: number
 }
 
 export interface PredictionProgress {
@@ -145,4 +147,58 @@ export interface LiveSyncStatus {
   unmatchedTeams: string[]
   fixtures: ReadFixture[]
   error: string | null
+}
+
+// --- Knockout (phase 2) ---
+
+export interface KnockoutEntry {
+  _id: string
+  user: string
+  entryNumber: number
+  paymentStatus: 'pending' | 'reported' | 'confirmed'
+  paymentNote: string | null
+  status: 'active' | 'completed'
+  completedAt: string | null
+}
+
+export interface TeamLite {
+  _id: string
+  name: string
+  code: string
+  flagUrl: string | null
+}
+
+export interface KnockoutBracketMatch {
+  matchId: string
+  matchNumber: number
+  stage: string
+  round: string
+  date: string
+  venue: string
+  placeholder1: string | null
+  placeholder2: string | null
+  actualTeam1: TeamLite | null
+  actualTeam2: TeamLite | null
+  status: 'scheduled' | 'finished'
+  live: boolean
+  score1: number | null
+  score2: number | null
+  decidedOnPenalties: boolean
+  penaltyWinner: 'team1' | 'team2' | null
+  myTeam1: TeamLite | null
+  myTeam2: TeamLite | null
+  prediction: {
+    score1: number
+    score2: number
+    advances: 'team1' | 'team2'
+    points: number | null
+  } | null
+}
+
+export interface KnockoutBracket {
+  entryId: string | null
+  paymentStatus: 'pending' | 'reported' | 'confirmed' | null
+  locked: boolean
+  deadline: string
+  matches: KnockoutBracketMatch[]
 }

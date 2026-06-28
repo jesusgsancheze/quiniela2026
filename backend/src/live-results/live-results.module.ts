@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MatchesModule } from '../matches/matches.module.js';
 import { PredictionsModule } from '../predictions/predictions.module.js';
 import { TeamsModule } from '../teams/teams.module.js';
+import { KnockoutModule } from '../knockout/knockout.module.js';
 import { FootballDataProvider } from './football-data.provider.js';
 import { LiveResultsService } from './live-results.service.js';
 import { LiveResultsController } from './live-results.controller.js';
@@ -19,6 +20,7 @@ import {
     MatchesModule,
     PredictionsModule,
     TeamsModule,
+    KnockoutModule,
   ],
   controllers: [LiveResultsController],
   providers: [FootballDataProvider, LiveResultsService],
