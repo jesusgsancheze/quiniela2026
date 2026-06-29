@@ -20,6 +20,7 @@
             <th class="py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-semibold text-primary w-12">#</th>
             <th class="py-3 px-2 sm:px-4 text-left text-xs sm:text-sm font-semibold text-primary">{{ $t('positions.player') }}</th>
             <th class="hidden sm:table-cell py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.entry') }}</th>
+            <th class="hidden sm:table-cell py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('knockout.champion') }}</th>
             <th class="hidden md:table-cell py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.matches') }}</th>
             <th class="hidden md:table-cell py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.exact') }}</th>
             <th class="hidden md:table-cell py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.correct') }}</th>
@@ -61,6 +62,13 @@
             <td class="hidden sm:table-cell py-3 px-4 text-center text-gray-600">
               <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">#{{ entry.entryNumber }}</span>
             </td>
+            <td class="hidden sm:table-cell py-3 px-4 text-center">
+              <span v-if="entry.champion" class="inline-flex items-center gap-1.5">
+                <img v-if="entry.champion.flagUrl" :src="entry.champion.flagUrl" class="w-5 h-3.5 object-cover rounded-sm" />
+                <span class="text-xs text-gray-700">{{ entry.champion.code || entry.champion.name }}</span>
+              </span>
+              <span v-else class="text-gray-300 text-xs">—</span>
+            </td>
             <td class="hidden md:table-cell py-3 px-4 text-center text-gray-600 text-sm">{{ entry.matchesScored }}</td>
             <td class="hidden md:table-cell py-3 px-4 text-center">
               <span class="inline-flex items-center justify-center min-w-[28px] px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">{{ entry.exactCount ?? 0 }}</span>
@@ -71,7 +79,7 @@
             <td class="py-3 px-2 sm:px-4 text-center font-bold text-primary">{{ entry.totalPoints }}</td>
           </tr>
           <tr v-if="expandedEntryId === entry.entryId" class="bg-gray-50">
-            <td colspan="7" class="px-2 sm:px-4 py-3">
+            <td colspan="8" class="px-2 sm:px-4 py-3">
               <div v-if="detailsLoading" class="text-sm text-gray-500 text-center py-3">{{ $t('positions.loadingDetails') }}</div>
               <div v-else-if="details && details.predictions.length === 0" class="text-sm text-gray-400 text-center py-3">{{ $t('positions.noPredictionsYet') }}</div>
               <ul v-else-if="details" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">

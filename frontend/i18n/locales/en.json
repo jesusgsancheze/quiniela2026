@@ -407,7 +407,8 @@
     "pickSaved": "Pick saved.",
     "saveFailed": "Could not save pick.",
     "standingsTitle": "Bracket Standings",
-    "backToBracket": "Back to bracket"
+    "backToBracket": "Back to bracket",
+    "champion": "Champion"
   },
   "knockoutMatches": {
     "title": "Knockout Matches",

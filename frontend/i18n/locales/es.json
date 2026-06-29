@@ -407,7 +407,8 @@
     "pickSaved": "Predicción guardada.",
     "saveFailed": "No se pudo guardar.",
     "standingsTitle": "Posiciones de Eliminatorias",
-    "backToBracket": "Volver al cuadro"
+    "backToBracket": "Volver al cuadro",
+    "champion": "Campeón"
   },
   "knockoutMatches": {
     "title": "Partidos de Eliminatorias",

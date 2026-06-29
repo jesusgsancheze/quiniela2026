@@ -29,6 +29,7 @@
             <th class="py-2 pr-2">{{ $t('positions.player') }}</th>
             <th class="py-2 px-2 text-center">{{ $t('positions.entry') }}</th>
             <th class="py-2 px-2 text-center">{{ $t('admin.players.progress') }}</th>
+            <th class="py-2 px-2 text-center">{{ $t('knockout.champion') }}</th>
             <th class="py-2 px-2 text-center">{{ $t('admin.players.payment') }}</th>
             <th class="py-2 pl-2 text-right"></th>
           </tr>
@@ -47,6 +48,13 @@
                   <div class="rounded-full h-2 transition-all duration-300" :class="e.progress.percentage === 100 ? 'bg-green-500' : 'bg-accent'" :style="{ width: `${e.progress.percentage}%` }"></div>
                 </div>
               </div>
+            </td>
+            <td class="py-2 px-2 text-center">
+              <span v-if="e.champion" class="inline-flex items-center gap-1.5">
+                <img v-if="e.champion.flagUrl" :src="e.champion.flagUrl" class="w-5 h-3.5 object-cover rounded-sm" />
+                <span class="text-xs text-gray-700">{{ e.champion.code || e.champion.name }}</span>
+              </span>
+              <span v-else class="text-gray-300 text-xs">—</span>
             </td>
             <td class="py-2 px-2 text-center">
               <span :class="[

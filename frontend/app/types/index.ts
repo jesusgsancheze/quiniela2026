@@ -77,6 +77,7 @@ export interface LeaderboardEntry {
   matchesScored: number
   exactCount?: number
   correctCount?: number
+  champion?: TeamLite | null
 }
 
 export interface PredictionProgress {
@@ -160,6 +161,7 @@ export interface KnockoutEntry {
   status: 'active' | 'completed'
   completedAt: string | null
   progress?: PredictionProgress
+  champion?: TeamLite | null
 }
 
 export interface TeamLite {

@@ -152,6 +152,7 @@ export class KnockoutService {
     const countByEntry = new Map<string, number>(
       counts.map((c) => [c._id?.toString(), c.count]),
     );
+    const champions = await this.computeChampions();
 
     return entries.map((e: any) => {
       const filled = countByEntry.get(e._id.toString()) || 0;
@@ -165,6 +166,7 @@ export class KnockoutService {
         status: e.status,
         completedAt: e.completedAt ?? null,
         progress: { filled, total, percentage },
+        champion: champions.get(e._id.toString()) ?? null,
       };
     });
   }
@@ -614,6 +616,45 @@ export class KnockoutService {
   // Leaderboard
   // ---------------------------------------------------------------------------
 
+  /** Each entry's predicted champion (the team they advance in the final). */
+  private async computeChampions(): Promise<Map<string, TeamLite | null>> {
+    const matches = await this.matchModel
+      .find({ stage: { $in: KNOCKOUT_STAGES } })
+      .sort({ matchNumber: 1 })
+      .exec();
+    const finalMatch = matches.find((m) => m.stage === 'final');
+    const matchesByNumber = new Map<number, Match>();
+    const matchById = new Map<string, Match>();
+    for (const m of matches) {
+      matchesByNumber.set(m.matchNumber, m);
+      matchById.set(m._id.toString(), m);
+    }
+
+    const out = new Map<string, TeamLite | null>();
+    if (!finalMatch) return out;
+
+    const preds = await this.predictionModel
+      .find({}, { entry: 1, match: 1, advances: 1 })
+      .lean()
+      .exec();
+    const picksByEntry = new Map<string, Map<number, 'team1' | 'team2'>>();
+    for (const p of preds as any[]) {
+      const eid = p.entry.toString();
+      const m = matchById.get(p.match.toString());
+      if (!m) continue;
+      if (!picksByEntry.has(eid)) picksByEntry.set(eid, new Map());
+      picksByEntry.get(eid)!.set(m.matchNumber, p.advances);
+    }
+
+    const teamMap = await this.loadTeamMap();
+    for (const [eid, picks] of picksByEntry) {
+      const teams = this.computeBracketTeams(matchesByNumber, picks);
+      const champId = teams.get(finalMatch.matchNumber)?.advancing ?? null;
+      out.set(eid, champId ? teamMap.get(champId) ?? null : null);
+    }
+    return out;
+  }
+
   async getRankings() {
     const grouped = await this.predictionModel.aggregate([
       {
@@ -636,6 +677,7 @@ export class KnockoutService {
     ]);
     const userMap = new Map(users.map((u) => [u._id.toString(), u]));
     const entryMap = new Map(entries.map((e) => [e._id.toString(), e]));
+    const champions = await this.computeChampions();
 
     const results = grouped
       .map((g) => {
@@ -654,6 +696,7 @@ export class KnockoutService {
           matchesScored: g.matchesScored || 0,
           exactCount: g.exactCount || 0,
           correctCount: g.correctCount || 0,
+          champion: champions.get(entry._id.toString()) ?? null,
         };
       })
       .filter(Boolean)
