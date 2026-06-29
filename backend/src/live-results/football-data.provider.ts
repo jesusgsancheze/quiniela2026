@@ -31,8 +31,16 @@ export interface ProviderMatch {
     winner?: 'HOME_TEAM' | 'AWAY_TEAM' | 'DRAW' | null;
     /** e.g. 'REGULAR', 'EXTRA_TIME', 'PENALTY_SHOOTOUT'. */
     duration?: string;
+    /**
+     * NOTE: for a knockout tie decided on penalties, football-data.org folds the
+     * shootout into `fullTime` (a 1-1 won 4-2 on pens arrives as 5-3). Use the
+     * breakdown fields below to recover the real 90'+ET scoreline.
+     */
     fullTime: { home: number | null; away: number | null };
     halfTime: { home: number | null; away: number | null };
+    regularTime?: { home: number | null; away: number | null };
+    extraTime?: { home: number | null; away: number | null };
+    penalties?: { home: number | null; away: number | null };
   };
 }
 

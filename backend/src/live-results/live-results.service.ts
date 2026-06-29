@@ -277,7 +277,31 @@ export class LiveResultsService implements OnModuleInit {
         // --- Knockout matches: capture penalties, then progress + rescore. ---
         if (KNOCKOUT_STAGES.includes(local.stage)) {
           const finished = !live;
-          const tie = score1 === score2;
+
+          // football-data folds the shootout into `fullTime` for penalty ties
+          // (a 1-1 won 4-2 on pens arrives as 5-3). Recover the real 90'+ET
+          // scoreline: prefer regularTime+extraTime; otherwise strip penalties
+          // from fullTime when that yields a level, non-negative score.
+          let koHome = homeScore;
+          let koAway = awayScore;
+          const rt = pm.score.regularTime;
+          const et = pm.score.extraTime;
+          const pen = pm.score.penalties;
+          if (rt) {
+            koHome = (rt.home ?? 0) + (et?.home ?? 0);
+            koAway = (rt.away ?? 0) + (et?.away ?? 0);
+          } else if (pen && (pen.home != null || pen.away != null)) {
+            const sh = homeScore - (pen.home ?? 0);
+            const sa = awayScore - (pen.away ?? 0);
+            if (sh >= 0 && sa >= 0 && sh === sa) {
+              koHome = sh;
+              koAway = sa;
+            }
+          }
+          const kScore1 = team1IsHome ? koHome : koAway;
+          const kScore2 = team1IsHome ? koAway : koHome;
+
+          const tie = kScore1 === kScore2;
           let decidedOnPenalties = false;
           let penaltyWinner: 'team1' | 'team2' | null = null;
           if (finished && tie) {
@@ -294,15 +318,15 @@ export class LiveResultsService implements OnModuleInit {
           }
 
           const unchanged =
-            local.score1 === score1 &&
-            local.score2 === score2 &&
+            local.score1 === kScore1 &&
+            local.score2 === kScore2 &&
             local.live === live &&
             local.status === 'finished' &&
             local.decidedOnPenalties === decidedOnPenalties &&
             (local.penaltyWinner ?? null) === penaltyWinner;
           if (unchanged) continue;
 
-          await this.knockoutBracket.applyLiveResult(local.id, score1, score2, {
+          await this.knockoutBracket.applyLiveResult(local.id, kScore1, kScore2, {
             live,
             decidedOnPenalties,
             penaltyWinner,
