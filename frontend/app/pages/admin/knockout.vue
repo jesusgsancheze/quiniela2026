@@ -28,6 +28,7 @@
           <tr class="text-left text-[11px] uppercase text-gray-400 border-b border-gray-100">
             <th class="py-2 pr-2">{{ $t('positions.player') }}</th>
             <th class="py-2 px-2 text-center">{{ $t('positions.entry') }}</th>
+            <th class="py-2 px-2 text-center">{{ $t('admin.players.progress') }}</th>
             <th class="py-2 px-2 text-center">{{ $t('admin.players.payment') }}</th>
             <th class="py-2 pl-2 text-right"></th>
           </tr>
@@ -36,6 +37,17 @@
           <tr v-for="e in entries" :key="e._id" class="border-b border-gray-50">
             <td class="py-2 pr-2">{{ userName(e.user) }}</td>
             <td class="py-2 px-2 text-center">#{{ e.entryNumber }}</td>
+            <td class="py-2 px-2">
+              <div v-if="e.progress" class="min-w-[110px] mx-auto">
+                <div class="flex justify-between text-[11px] text-gray-500 mb-1">
+                  <span>{{ e.progress.filled }}/{{ e.progress.total }}</span>
+                  <span class="font-semibold" :class="e.progress.percentage === 100 ? 'text-green-600' : 'text-accent'">{{ e.progress.percentage }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div class="rounded-full h-2 transition-all duration-300" :class="e.progress.percentage === 100 ? 'bg-green-500' : 'bg-accent'" :style="{ width: `${e.progress.percentage}%` }"></div>
+                </div>
+              </div>
+            </td>
             <td class="py-2 px-2 text-center">
               <span :class="[
                 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',

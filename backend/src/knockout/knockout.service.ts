@@ -136,6 +136,39 @@ export class KnockoutService {
     return this.entryModel.find().sort({ user: 1, entryNumber: 1 }).exec();
   }
 
+  /** All entries with how many of the knockout matches each one has filled. */
+  async listAllEntriesWithProgress() {
+    const entries = await this.entryModel
+      .find()
+      .sort({ user: 1, entryNumber: 1 })
+      .lean()
+      .exec();
+    const total = await this.matchModel.countDocuments({
+      stage: { $in: KNOCKOUT_STAGES },
+    });
+    const counts = await this.predictionModel.aggregate([
+      { $group: { _id: '$entry', count: { $sum: 1 } } },
+    ]);
+    const countByEntry = new Map<string, number>(
+      counts.map((c) => [c._id?.toString(), c.count]),
+    );
+
+    return entries.map((e: any) => {
+      const filled = countByEntry.get(e._id.toString()) || 0;
+      const percentage = total > 0 ? Math.round((filled / total) * 100) : 0;
+      return {
+        _id: e._id.toString(),
+        user: e.user.toString(),
+        entryNumber: e.entryNumber,
+        paymentStatus: e.paymentStatus,
+        paymentNote: e.paymentNote ?? null,
+        status: e.status,
+        completedAt: e.completedAt ?? null,
+        progress: { filled, total, percentage },
+      };
+    });
+  }
+
   private ensureCanPredict(entry: KnockoutEntry | null): KnockoutEntry {
     if (!entry) {
       throw new ForbiddenException('You do not have a knockout entry yet.');

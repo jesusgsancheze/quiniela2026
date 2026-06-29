@@ -159,6 +159,7 @@ export interface KnockoutEntry {
   paymentNote: string | null
   status: 'active' | 'completed'
   completedAt: string | null
+  progress?: PredictionProgress
 }
 
 export interface TeamLite {

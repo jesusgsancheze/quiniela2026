@@ -94,7 +94,7 @@ export class KnockoutController {
   @Get('entries')
   @Roles(Role.Admin)
   allEntries() {
-    return this.knockout.listAllEntries();
+    return this.knockout.listAllEntriesWithProgress();
   }
 
   @Patch('entries/:id/confirm')
