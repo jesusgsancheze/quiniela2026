@@ -87,8 +87,17 @@
                 {{ locale === 'en' ? 'ES' : 'EN' }}
               </button>
 
+              <!-- Login link for logged-out visitors (e.g. on the public draw) -->
+              <NuxtLink
+                v-if="!authStore.isAuthenticated"
+                to="/login"
+                class="text-gray-300 hover:text-white text-sm font-medium bg-primary px-3 py-2 rounded hover:bg-primary-light transition-colors"
+              >
+                {{ $t('nav.login') }}
+              </NuxtLink>
+
               <!-- User menu -->
-              <div class="relative ml-2" ref="menuRef">
+              <div v-else class="relative ml-2" ref="menuRef">
                 <button @click="showMenu = !showMenu" class="flex items-center gap-2 bg-primary rounded-lg px-3 py-2 hover:bg-primary-light transition-colors">
                   <img
                     v-if="avatarUrl(authStore.user?.profilePicture)"
@@ -133,7 +142,7 @@
           <div v-if="mobileOpen" class="md:hidden bg-primary-dark border-t border-primary">
             <div class="px-4 py-4 space-y-1">
               <!-- User info -->
-              <div class="flex items-center gap-3 pb-3 mb-3 border-b border-primary">
+              <div v-if="authStore.isAuthenticated" class="flex items-center gap-3 pb-3 mb-3 border-b border-primary">
                 <img
                   v-if="avatarUrl(authStore.user?.profilePicture)"
                   :src="avatarUrl(authStore.user?.profilePicture)!"
@@ -147,6 +156,14 @@
                   <p class="text-gray-400 text-xs">{{ authStore.user?.email }}</p>
                 </div>
               </div>
+              <NuxtLink
+                v-else
+                to="/login"
+                class="block py-2 px-3 mb-2 text-gray-300 hover:text-white hover:bg-primary rounded text-sm font-medium"
+                @click="mobileOpen = false"
+              >
+                {{ $t('nav.login') }}
+              </NuxtLink>
 
               <!-- Group Stage section -->
               <p class="px-3 pt-1 pb-1 text-[11px] uppercase tracking-wider text-gray-500 font-semibold">{{ $t('nav.groupStage') }}</p>
@@ -206,10 +223,10 @@
               </button>
 
               <div class="border-t border-primary pt-3 mt-3 space-y-1">
-                <NuxtLink to="/profile" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                <NuxtLink v-if="authStore.isAuthenticated" to="/profile" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
                   {{ $t('nav.profile') }}
                 </NuxtLink>
-                <NuxtLink to="/change-password" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
+                <NuxtLink v-if="authStore.isAuthenticated" to="/change-password" class="block py-2 px-3 text-gray-300 hover:text-white hover:bg-primary rounded text-sm" @click="mobileOpen = false">
                   {{ $t('nav.changePassword') }}
                 </NuxtLink>
 
@@ -225,7 +242,7 @@
                   {{ locale === 'en' ? 'Español' : 'English' }}
                 </button>
 
-                <button @click="handleLogout" class="w-full text-left py-2 px-3 text-red-400 hover:text-red-300 hover:bg-primary rounded text-sm">
+                <button v-if="authStore.isAuthenticated" @click="handleLogout" class="w-full text-left py-2 px-3 text-red-400 hover:text-red-300 hover:bg-primary rounded text-sm">
                   {{ $t('nav.logout') }}
                 </button>
               </div>
@@ -281,6 +298,9 @@ function handleLogout() {
 }
 
 onMounted(() => {
+  // Public pages (e.g. the shared draw) have no auth middleware, so make sure
+  // the nav reflects the logged-in user when there is one.
+  authStore.loadFromStorage()
   document.addEventListener('click', (e) => {
     if (menuRef.value && !menuRef.value.contains(e.target as Node)) {
       showMenu.value = false

@@ -25,6 +25,7 @@
             <th class="hidden md:table-cell py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.exact') }}</th>
             <th class="hidden md:table-cell py-3 px-4 text-center text-sm font-semibold text-primary">{{ $t('positions.correct') }}</th>
             <th class="py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-semibold text-primary">{{ $t('positions.points') }}</th>
+            <th class="py-3 px-1 sm:px-3"></th>
           </tr>
         </thead>
         <tbody>
@@ -77,9 +78,17 @@
               <span class="inline-flex items-center justify-center min-w-[28px] px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">{{ entry.correctCount ?? 0 }}</span>
             </td>
             <td class="py-3 px-2 sm:px-4 text-center font-bold text-primary">{{ entry.totalPoints }}</td>
+            <td class="py-3 px-1 sm:px-3 text-right">
+              <button
+                class="text-xs text-primary hover:underline whitespace-nowrap"
+                @click.stop="openDraw(entry)"
+              >
+                {{ $t('knockout.viewAsDraw') }}
+              </button>
+            </td>
           </tr>
           <tr v-if="expandedEntryId === entry.entryId" class="bg-gray-50">
-            <td colspan="8" class="px-2 sm:px-4 py-3">
+            <td colspan="9" class="px-2 sm:px-4 py-3">
               <div v-if="detailsLoading" class="text-sm text-gray-500 text-center py-3">{{ $t('positions.loadingDetails') }}</div>
               <div v-else-if="details && details.predictions.length === 0" class="text-sm text-gray-400 text-center py-3">{{ $t('positions.noPredictionsYet') }}</div>
               <ul v-else-if="details" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -105,6 +114,8 @@
         </tbody>
       </table>
     </div>
+
+    <BracketModal :open="drawOpen" :entry-id="drawEntryId" :title="drawTitle" @close="drawOpen = false" />
   </div>
 </template>
 
@@ -122,6 +133,15 @@ const loading = ref(true)
 const expandedEntryId = ref<string | null>(null)
 const details = ref<{ predictions: KnockoutEntryPredictionRow[] } | null>(null)
 const detailsLoading = ref(false)
+
+const drawOpen = ref(false)
+const drawEntryId = ref<string | null>(null)
+const drawTitle = ref('')
+function openDraw(entry: LeaderboardEntry) {
+  drawEntryId.value = entry.entryId
+  drawTitle.value = `${entry.firstName} ${entry.lastName} · #${entry.entryNumber}`
+  drawOpen.value = true
+}
 
 function stageLabel(stage: string): string {
   const map: Record<string, string> = {

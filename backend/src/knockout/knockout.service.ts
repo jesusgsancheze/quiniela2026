@@ -536,6 +536,53 @@ export class KnockoutService {
     return { predictions };
   }
 
+  /** A single entry's predicted bracket, with teams propagated from its picks. */
+  async getEntryBracket(entryId: string) {
+    if (!Types.ObjectId.isValid(entryId)) return { matches: [] };
+    const matches = await this.matchModel
+      .find({ stage: { $in: KNOCKOUT_STAGES } })
+      .sort({ matchNumber: 1 })
+      .exec();
+    const matchesByNumber = new Map<number, Match>();
+    const matchById = new Map<string, Match>();
+    for (const m of matches) {
+      matchesByNumber.set(m.matchNumber, m);
+      matchById.set(m._id.toString(), m);
+    }
+    const preds = await this.predictionModel
+      .find({ entry: new Types.ObjectId(entryId) })
+      .exec();
+    const predByMatch = new Map(preds.map((p) => [p.match.toString(), p]));
+    const picks = new Map<number, 'team1' | 'team2'>();
+    for (const p of preds) {
+      const m = matchById.get(p.match.toString());
+      if (m) picks.set(m.matchNumber, p.advances);
+    }
+    const userTeams = this.computeBracketTeams(matchesByNumber, picks);
+    const teamMap = await this.loadTeamMap();
+    const team = (id: string | null) => (id ? teamMap.get(id) ?? null : null);
+
+    const rows = matches.map((m) => {
+      const ut = userTeams.get(m.matchNumber);
+      const pred = predByMatch.get(m._id.toString());
+      return {
+        matchNumber: m.matchNumber,
+        stage: m.stage,
+        round: m.round,
+        date: m.date,
+        venue: m.venue,
+        placeholder1: m.team1Placeholder,
+        placeholder2: m.team2Placeholder,
+        team1: team(ut?.team1 ?? null),
+        team2: team(ut?.team2 ?? null),
+        score1: pred ? pred.score1 : null,
+        score2: pred ? pred.score2 : null,
+        advances: pred ? pred.advances : null,
+      };
+    });
+    return { matches: rows };
+  }
+
   // ---------------------------------------------------------------------------
   // Scoring
   // ---------------------------------------------------------------------------

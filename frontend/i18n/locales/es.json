@@ -24,7 +24,8 @@
     "knockoutStage": "Eliminatorias",
     "general": "General",
     "knockoutMatches": "Partidos Eliminatorias",
-    "knockoutDraw": "Cuadro"
+    "knockoutDraw": "Cuadro",
+    "login": "Iniciar sesión"
   },
   "rules": {
     "title": "Cómo Jugar",
@@ -408,7 +409,10 @@
     "saveFailed": "No se pudo guardar.",
     "standingsTitle": "Posiciones de Eliminatorias",
     "backToBracket": "Volver al cuadro",
-    "champion": "Campeón"
+    "champion": "Campeón",
+    "viewAsDraw": "Ver como cuadro",
+    "myBracket": "Mi cuadro",
+    "close": "Cerrar"
   },
   "knockoutMatches": {
     "title": "Partidos de Eliminatorias",

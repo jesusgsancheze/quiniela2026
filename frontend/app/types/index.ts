@@ -243,6 +243,21 @@ export interface KnockoutMatchDetail {
   predictions: KnockoutMatchPick[]
 }
 
+export interface DrawMatch {
+  matchNumber: number
+  stage: string
+  date: string
+  venue: string
+  placeholder1: string | null
+  placeholder2: string | null
+  team1: TeamLite | null
+  team2: TeamLite | null
+  score1: number | null
+  score2: number | null
+  winnerSide: 'team1' | 'team2' | null
+  note?: string | null
+}
+
 export interface KnockoutEntryPredictionRow {
   matchNumber: number
   stage: string

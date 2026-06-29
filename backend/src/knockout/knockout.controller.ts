@@ -17,6 +17,7 @@ import { SetKnockoutResultDto } from './dto/set-knockout-result.dto.js';
 import { OverrideTeamsDto } from './dto/override-teams.dto.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
+import { Public } from '../common/decorators/public.decorator.js';
 import { Role } from '../common/enums/role.enum.js';
 import { User } from '../users/schemas/user.schema.js';
 
@@ -77,6 +78,18 @@ export class KnockoutController {
   @Get('matches')
   publicMatches() {
     return this.knockout.getPublicMatches();
+  }
+
+  // Publicly shareable bracket — no session required.
+  @Public()
+  @Get('public/draw')
+  publicDraw() {
+    return this.knockout.getPublicMatches();
+  }
+
+  @Get('entries/:id/bracket')
+  entryBracket(@Param('id') id: string) {
+    return this.knockout.getEntryBracket(id);
   }
 
   @Get('matches/:id/predictions')

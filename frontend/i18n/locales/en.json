@@ -24,7 +24,8 @@
     "knockoutStage": "Knockout",
     "general": "General",
     "knockoutMatches": "Knockout Matches",
-    "knockoutDraw": "Draw"
+    "knockoutDraw": "Draw",
+    "login": "Log in"
   },
   "rules": {
     "title": "How to Play",
@@ -408,7 +409,10 @@
     "saveFailed": "Could not save pick.",
     "standingsTitle": "Bracket Standings",
     "backToBracket": "Back to bracket",
-    "champion": "Champion"
+    "champion": "Champion",
+    "viewAsDraw": "View as draw",
+    "myBracket": "My bracket",
+    "close": "Close"
   },
   "knockoutMatches": {
     "title": "Knockout Matches",

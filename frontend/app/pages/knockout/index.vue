@@ -5,10 +5,26 @@
         <h1 class="text-3xl font-bold text-primary">{{ $t('knockout.title') }}</h1>
         <p class="text-gray-500 text-sm mt-1">{{ $t('knockout.subtitle') }}</p>
       </div>
-      <NuxtLink to="/knockout/standings" class="btn-secondary text-sm px-4 py-2 self-start">
-        {{ $t('knockout.viewStandings') }}
-      </NuxtLink>
+      <div class="flex gap-2 self-start">
+        <button
+          v-if="bracket?.entryId"
+          class="btn-outline text-sm px-4 py-2"
+          @click="drawOpen = true"
+        >
+          {{ $t('knockout.viewAsDraw') }}
+        </button>
+        <NuxtLink to="/knockout/standings" class="btn-secondary text-sm px-4 py-2">
+          {{ $t('knockout.viewStandings') }}
+        </NuxtLink>
+      </div>
     </div>
+
+    <BracketModal
+      :open="drawOpen"
+      :entry-id="bracket?.entryId ?? null"
+      :title="$t('knockout.myBracket')"
+      @close="drawOpen = false"
+    />
 
     <div v-if="loading" class="text-center py-12 text-gray-500">{{ $t('knockout.loading') }}</div>
 
@@ -158,6 +174,7 @@ const loading = ref(true)
 const busy = ref(false)
 const bracket = ref<KnockoutBracket | null>(null)
 const paymentNote = ref('')
+const drawOpen = ref(false)
 // Per-match autosave indicator: 'saving' | 'saved' | undefined
 const status = reactive<Record<string, 'saving' | 'saved' | undefined>>({})
 
