@@ -280,19 +280,16 @@ export class LiveResultsService implements OnModuleInit {
 
           // football-data folds the shootout into `fullTime` for penalty ties
           // (a 1-1 won 4-2 on pens arrives as 5-3). Recover the real 90'+ET
-          // scoreline: prefer regularTime+extraTime; otherwise strip penalties
-          // from fullTime when that yields a level, non-negative score.
+          // scoreline by stripping the shootout from fullTime — but only when
+          // that yields a level, non-negative score (so it's a no-op when
+          // fullTime already excludes the shootout).
           let koHome = homeScore;
           let koAway = awayScore;
-          const rt = pm.score.regularTime;
-          const et = pm.score.extraTime;
           const pen = pm.score.penalties;
-          if (rt) {
-            koHome = (rt.home ?? 0) + (et?.home ?? 0);
-            koAway = (rt.away ?? 0) + (et?.away ?? 0);
-          } else if (pen && (pen.home != null || pen.away != null)) {
-            const sh = homeScore - (pen.home ?? 0);
-            const sa = awayScore - (pen.away ?? 0);
+          const hasPens = !!pen && (pen.home != null || pen.away != null);
+          if (hasPens) {
+            const sh = homeScore - (pen!.home ?? 0);
+            const sa = awayScore - (pen!.away ?? 0);
             if (sh >= 0 && sa >= 0 && sh === sa) {
               koHome = sh;
               koAway = sa;
@@ -301,19 +298,21 @@ export class LiveResultsService implements OnModuleInit {
           const kScore1 = team1IsHome ? koHome : koAway;
           const kScore2 = team1IsHome ? koAway : koHome;
 
+          // A finished knockout tie was decided on penalties. Derive the winner
+          // from the shootout score first (most reliable), then `winner`.
           const tie = kScore1 === kScore2;
           let decidedOnPenalties = false;
           let penaltyWinner: 'team1' | 'team2' | null = null;
           if (finished && tie) {
-            const w = pm.score.winner;
-            if (w === 'HOME_TEAM' || w === 'AWAY_TEAM') {
-              const advancingIsHome = w === 'HOME_TEAM';
+            decidedOnPenalties = true;
+            let advancingIsHome: boolean | null = null;
+            if (pen && pen.home != null && pen.away != null && pen.home !== pen.away) {
+              advancingIsHome = pen.home > pen.away;
+            } else if (pm.score.winner === 'HOME_TEAM' || pm.score.winner === 'AWAY_TEAM') {
+              advancingIsHome = pm.score.winner === 'HOME_TEAM';
+            }
+            if (advancingIsHome !== null) {
               penaltyWinner = advancingIsHome === team1IsHome ? 'team1' : 'team2';
-              decidedOnPenalties = true;
-            } else if (pm.score.duration === 'PENALTY_SHOOTOUT') {
-              // Shootout happened but the winner field is missing — record that
-              // it was decided on penalties; an admin can set the winner.
-              decidedOnPenalties = true;
             }
           }
 
